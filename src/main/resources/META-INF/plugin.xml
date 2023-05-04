@@ -1,18 +1,24 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.nikolaikopernik.codecomplexityplugin</id>
-    <name>code-complexity-plugin Template</name>
-    <vendor>nikolaikopernik</vendor>
+    <id>com.github.nikolaikopernik.codecomplexity</id>
+    <name>Code Complexity</name>
+    <vendor email="nikolaikopernik@gmail.com">Nikolai Bogdanov</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="codecomplexity-java.xml">com.intellij.java</depends>
+    <depends optional="true" config-file="codecomplexity-kotlin.xml">org.jetbrains.kotlin</depends>
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
+    <extensionPoints>
+        <extensionPoint name="languageInfoProvider"
+                        interface="com.github.nikolaikopernik.codecomplexity.core.LanguageInfoProvider"
+                        dynamic="true"/>
+    </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.nikolaikopernik.codecomplexityplugin.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <codeInsight.inlayProviderFactory implementation="com.github.nikolaikopernik.codecomplexity.ui.ComplexityInlayHintsProviderFactory"/>
     </extensions>
 
-    <applicationListeners>
-        <listener class="com.github.nikolaikopernik.codecomplexityplugin.listeners.MyFrameStateListener" topic="com.intellij.ide.FrameStateListener"/>
-    </applicationListeners>
+<!--    <applicationListeners>-->
+<!--        <listener class="com.github.nikolaikopernik.codecomplexity.listeners.MyFrameStateListener" topic="com.intellij.ide.FrameStateListener"/>-->
+<!--    </applicationListeners>-->
 </idea-plugin>

@@ -1,0 +1,6 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.github.nikolaikopernik.codecomplexity">
+        <languageInfoProvider id="KtLanguageInfoProvider"
+                              implementation="com.github.nikolaikopernik.codecomplexity.kotlin.KtLanguageInfoProvider"/>
+    </extensions>
+</idea-plugin>

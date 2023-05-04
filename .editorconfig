@@ -1,0 +1,27 @@
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+end_of_line = lf
+
+[{*.java,*.kt,*.kts,*.xml}]
+indent_size = 4
+max_line_length = 120
+ij_java_imports_layout = $*,|,*,|,javax.**,java.**
+ij_any_keep_line_breaks = true
+ij_any_call_parameters_new_line_after_left_paren = false
+ij_any_call_parameters_wrap = off
+ij_any_call_parameters_right_paren_on_new_line = false
+ij_any_align_multiline_parameters = true
+ij_any_align_multiline_parameters_in_calls = true
+ij_any_align_multiline_chained_methods = true
+ij_any_method_parameters_new_line_after_left_paren = false
+ij_any_method_parameters_right_paren_on_new_line = false
+ij_kotlin_continuation_indent_in_if_conditions = false
+ij_java_class_count_to_use_import_on_demand = 100
+ij_kotlin_name_count_to_use_star_import = 100
+ij_kotlin_name_count_to_use_star_import_for_members = 100
