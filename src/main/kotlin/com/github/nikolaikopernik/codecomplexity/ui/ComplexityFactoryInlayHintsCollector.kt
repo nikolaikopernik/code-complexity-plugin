@@ -8,9 +8,6 @@ import com.intellij.codeInsight.hints.FactoryInlayHintsCollector
 import com.intellij.codeInsight.hints.InlayHintsSink
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
 import com.intellij.codeInsight.hints.presentation.InsetPresentation
-import com.intellij.codeInsight.hints.presentation.RoundWithBackgroundPresentation
-import com.intellij.codeInsight.hints.presentation.WithAttributesPresentation
-import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiRecursiveElementVisitor
@@ -72,13 +69,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
         return getTextPresentation(complexityScore, editor)
             .let {
                 InsetPresentation(
-                    RoundWithBackgroundPresentation(
-                        InsetPresentation(it, left = 0, right = 0),
-                        8,
-                        8,
-                        ComplexitySettings.getColor(complexityScore),
-                        0.2f
-                    ),
+                    it,
                     top = 2,
                     down = 0
                 )
@@ -86,12 +77,8 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
     }
 
     private fun getTextPresentation(complexityScore: Int, editor: Editor): InlayPresentation =
-        WithAttributesPresentation(
-            InsetPresentation(factory.text(ComplexitySettings.getText(complexityScore)),
-                              top = 4, down = 4, left = 6, right = 6),
-            DefaultLanguageHighlighterColors.INLINE_PARAMETER_HINT,
-            editor)
-
+        InsetPresentation(factory.text(ComplexitySettings.getText(complexityScore)),
+                          top = 4, down = 4, left = 6, right = 6)
 
     override fun equals(other: Any?): Boolean {
         if (other is ComplexityFactoryInlayHintsCollector) {
