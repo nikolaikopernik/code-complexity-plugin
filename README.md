@@ -1,8 +1,8 @@
 # Code Complexity plugin for IDEA
 
 ![Build](https://github.com/nikolaikopernik/code-complexity-plugin/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
+[![Version](https://img.shields.io/jetbrains/plugin/v/21667.svg)](https://plugins.jetbrains.com/plugin/21667)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/21667.svg)](https://plugins.jetbrains.com/plugin/21667)
 
 <!-- Plugin description -->
 This plugin calculates code complexity metric right in the editor and shows the complexity in the hint next to the method/class. It's based on the **Cognitive Complexity** metric proposed by G. Ann Campbell in [Cognitive Complexity - A new way of measuring understandability](https://www.sonarsource.com/docs/CognitiveComplexity.pdf).
