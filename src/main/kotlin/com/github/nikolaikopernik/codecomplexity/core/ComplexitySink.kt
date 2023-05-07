@@ -18,20 +18,20 @@ class ComplexitySink {
     fun increaseComplexity(amount: Int, type: PointType) {
         points.add(
             ComplexityPoint(
-            complexity = 1,
-            nesting = nesting,
-            type = type
-        )
+                complexity = 1,
+                nesting = nesting,
+                type = type
+            )
         )
     }
 
     fun increaseComplexityAndNesting(type: PointType) {
         points.add(
             ComplexityPoint(
-            complexity = 1 + nesting,
-            nesting = nesting++,
-            type = type
-        )
+                complexity = 1 + nesting,
+                nesting = nesting++,
+                type = type
+            )
         )
     }
 

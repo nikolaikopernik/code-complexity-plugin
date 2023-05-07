@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 
 @Suppress("UnstableApiUsage")
 internal class ComplexityInlayHintsProviderFactory : InlayHintsProviderFactory {
-    override fun getProvidersInfo(project: Project): List<ProviderInfo<out Any>> {
+    override fun getProvidersInfo(): List<ProviderInfo<out Any>> {
         return LanguageInfoProvider.EP_NAME.extensionList
             .map { ProviderInfo(it.language, ComplexityInlayHintsProvider(it)) }
     }
