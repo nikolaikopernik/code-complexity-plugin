@@ -7,17 +7,21 @@ import com.intellij.psi.PsiElement
 import com.jetbrains.python.psi.PyBinaryExpression
 import com.jetbrains.python.psi.PyBreakStatement
 import com.jetbrains.python.psi.PyContinueStatement
+import com.jetbrains.python.psi.PyElsePart
 import com.jetbrains.python.psi.PyForStatement
 import com.jetbrains.python.psi.PyIfStatement
 import com.jetbrains.python.psi.PyLambdaExpression
 import com.jetbrains.python.psi.PyTryExceptStatement
 import com.jetbrains.python.psi.PyWhileStatement
+import org.jetbrains.kotlin.psi.KtContainerNodeForControlStructureBody
+import org.jetbrains.kotlin.psi.KtIfExpression
 
 internal class PythonLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     override fun processElement(element: PsiElement) {
         when (element) {
             is PyWhileStatement -> sink.increaseComplexityAndNesting(PointType.LOOP_WHILE)
             is PyIfStatement -> processIfExpression(element)
+            is PyElsePart ->  sink.increaseComplexity(PointType.ELSE)
             is PyForStatement -> sink.increaseComplexityAndNesting(PointType.LOOP_FOR)
             is PyTryExceptStatement -> sink.increaseComplexityAndNesting(PointType.CATCH)
             is PyBreakStatement -> if (element.loopStatement != null) sink.increaseComplexity(PointType.BREAK)
@@ -47,7 +51,6 @@ internal class PythonLanguageVisitor(private val sink: ComplexitySink) : Element
 
 
     private fun processIfExpression(element: PyIfStatement) {
-        sink.increaseNesting()
-        sink.increaseComplexity(PointType.IF)
+        sink.increaseComplexityAndNesting(PointType.IF)
     }
 }
