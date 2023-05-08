@@ -7,15 +7,13 @@ import com.intellij.lang.Language
 import com.intellij.psi.PsiElement
 import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.psi.PyClass
+import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.PyNamedElementContainer
 
 class PythonLanguageInfoProvider(override val language: Language = PythonLanguage.INSTANCE) : LanguageInfoProvider {
-    private val classMemberList = listOf(
-        PyNamedElementContainer::class.java
-    )
 
     override fun isClassMember(element: PsiElement): Boolean {
-        return element::class.java in classMemberList
+        return element is PyFunction
     }
 
     override fun isClassWithBody(element: PsiElement): Boolean {
