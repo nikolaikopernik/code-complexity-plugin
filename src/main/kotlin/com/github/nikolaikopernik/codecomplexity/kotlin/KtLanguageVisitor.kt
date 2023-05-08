@@ -124,7 +124,7 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     }
 
     private fun isRecursiveCall(element: KtElement): Boolean {
-        if (RecursivePropertyAccessorInspection.isRecursivePropertyAccess(element)) return true
+        if (RecursivePropertyAccessorInspection.isRecursivePropertyAccess(element, false)) return true
         if (RecursivePropertyAccessorInspection.isRecursiveSyntheticPropertyAccess(element)) return true
         // Fast check for names without resolve
         val resolveName = getCallNameFromPsi(element) ?: return false
@@ -159,8 +159,7 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
             }
         }
 
-        if (isDifferentReceiver(resolvedCall.dispatchReceiver)) return false
-        return true
+        return !isDifferentReceiver(resolvedCall.dispatchReceiver)
     }
 
     private fun getEnclosingFunction(element: NavigatablePsiElement,

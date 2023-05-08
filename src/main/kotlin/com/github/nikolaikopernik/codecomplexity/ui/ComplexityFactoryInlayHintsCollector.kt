@@ -1,6 +1,7 @@
 package com.github.nikolaikopernik.codecomplexity.ui
 
 import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
+import com.github.nikolaikopernik.codecomplexity.core.PLUGIN_EP_NAME
 import com.github.nikolaikopernik.codecomplexity.core.LanguageInfoProvider
 import com.github.nikolaikopernik.codecomplexity.core.PointType
 import com.github.nikolaikopernik.codecomplexity.settings.ComplexitySettings
@@ -93,7 +94,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
 
     private fun PsiElement.findProviderForElement(): LanguageInfoProvider {
         val language = this.language
-        val provider = LanguageInfoProvider.EP_NAME.findFirstSafe { it.language == language }
+        val provider = PLUGIN_EP_NAME.findFirstSafe { it.language == language }
         checkNotNull(provider) { "Failed to obtain LanguageInfoProvider for language with id: ${language.id}" }
         return provider
     }
