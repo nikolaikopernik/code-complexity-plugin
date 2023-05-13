@@ -13,7 +13,6 @@ import com.intellij.codeInsight.hints.presentation.InsetPresentation
 import com.intellij.codeInsight.hints.presentation.ScaledIconPresentation
 import com.intellij.codeInsight.hints.presentation.SequencePresentation
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.util.IconLoader
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiRecursiveElementVisitor
 import com.intellij.psi.util.CachedValueProvider
@@ -77,8 +76,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
                     ScaledIconPresentation(
                         InlayTextMetricsStorage(editor),
                         true,
-                        IconLoader.getIcon(ComplexitySettings.getIcon(complexityScore),
-                                           ComplexityFactoryInlayHintsCollector::class.java.classLoader),
+                        ComplexitySettings.getIcon(complexityScore),
                         editor.component),
                     top = 6),
                 InsetPresentation(getTextPresentation(complexityScore, editor), top = 2)
