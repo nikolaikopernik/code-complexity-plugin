@@ -1,15 +1,19 @@
 package com.github.nikolaikopernik.codecomplexity.ui
 
 import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
-import com.github.nikolaikopernik.codecomplexity.core.PLUGIN_EP_NAME
 import com.github.nikolaikopernik.codecomplexity.core.LanguageInfoProvider
+import com.github.nikolaikopernik.codecomplexity.core.PLUGIN_EP_NAME
 import com.github.nikolaikopernik.codecomplexity.core.PointType
 import com.github.nikolaikopernik.codecomplexity.settings.ComplexitySettings
 import com.intellij.codeInsight.hints.FactoryInlayHintsCollector
 import com.intellij.codeInsight.hints.InlayHintsSink
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
+import com.intellij.codeInsight.hints.presentation.InlayTextMetricsStorage
 import com.intellij.codeInsight.hints.presentation.InsetPresentation
+import com.intellij.codeInsight.hints.presentation.ScaledIconPresentation
+import com.intellij.codeInsight.hints.presentation.SequencePresentation
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.util.IconLoader
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiRecursiveElementVisitor
 import com.intellij.psi.util.CachedValueProvider
@@ -20,18 +24,18 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
                                            private val editor: Editor) : FactoryInlayHintsCollector(editor) {
 
 
-    private fun getClassComplexity(element: PsiElement): Int {
+    private fun getClassComplexity(element: PsiElement): ComplexitySink {
         return ComplexitySink().also { sink ->
             element.accept(object : PsiRecursiveElementVisitor() {
                 override fun visitElement(element: PsiElement) {
                     if (languageInfoProvider.isClassMember(element)) {
-                        sink.increaseComplexity(element.obtainElementComplexity(), PointType.METHOD)
+                        sink.increaseComplexity(element.obtainElementComplexity().getComplexity(), PointType.METHOD)
                     } else {
                         super.visitElement(element)
                     }
                 }
             })
-        }.getComplexity()
+        }
     }
 
     override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
@@ -48,7 +52,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
         return true
     }
 
-    private fun applySinkResults(element: PsiElement, score: Int, sink: InlayHintsSink) {
+    private fun applySinkResults(element: PsiElement, score: ComplexitySink, sink: InlayHintsSink) {
         getPresentation(element, score)?.let {
             sink.addInlineElement(
                 offset = element.textOffset,
@@ -66,19 +70,24 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
         return factory.seq(factory.textSpacePlaceholder(column, true), this)
     }
 
-    private fun getPresentation(element: PsiElement, complexityScore: Int): InlayPresentation? {
-        return getTextPresentation(complexityScore, editor)
-            .let {
+    private fun getPresentation(element: PsiElement, complexityScore: ComplexitySink): InlayPresentation? {
+        return InsetPresentation(
+            SequencePresentation(listOf(
                 InsetPresentation(
-                    it,
-                    top = 2,
-                    down = 0
-                )
-            }
+                    ScaledIconPresentation(
+                        InlayTextMetricsStorage(editor),
+                        true,
+                        IconLoader.getIcon(ComplexitySettings.getIcon(complexityScore),
+                                           ComplexityFactoryInlayHintsCollector::class.java.classLoader),
+                        editor.component),
+                    top = 6),
+                InsetPresentation(getTextPresentation(complexityScore, editor), top = 2)
+            ))
+        )
     }
 
-    private fun getTextPresentation(complexityScore: Int, editor: Editor): InlayPresentation =
-        InsetPresentation(factory.text(ComplexitySettings.getText(complexityScore)),
+    private fun getTextPresentation(complexity: ComplexitySink, editor: Editor): InlayPresentation =
+        InsetPresentation(factory.text(ComplexitySettings.getText(complexity)),
                           top = 4, down = 4, left = 6, right = 6)
 
     override fun equals(other: Any?): Boolean {
@@ -99,15 +108,14 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
         return provider
     }
 
-    private fun PsiElement.obtainElementComplexity(): Int {
+    private fun PsiElement.obtainElementComplexity(): ComplexitySink {
         return CachedValuesManager.getCachedValue(this) {
             // Search for the first provider with the same language on every recompute,
             // so there is no dependency on the reference to that provider.
             val provider = this.findProviderForElement()
             val sink = ComplexitySink()
             this.accept(provider.getVisitor(sink))
-            val complexity = sink.getComplexity()
-            CachedValueProvider.Result.create(complexity, this)
+            CachedValueProvider.Result.create(sink, this)
         }
     }
 }
