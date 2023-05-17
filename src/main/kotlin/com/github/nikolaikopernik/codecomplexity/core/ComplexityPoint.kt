@@ -5,7 +5,7 @@ data class ComplexityPoint(
     val nesting: Int,
     val type: PointType) {
 
-    override fun toString(): String = ". ".repeat(nesting) + "$type +$complexity"
+    override fun toString(): String = ". ".repeat(nesting) + "$type + $complexity"
 }
 
 enum class PointType {

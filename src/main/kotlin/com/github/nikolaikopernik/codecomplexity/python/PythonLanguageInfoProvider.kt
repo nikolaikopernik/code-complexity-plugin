@@ -8,12 +8,11 @@ import com.intellij.psi.PsiElement
 import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
-import com.jetbrains.python.psi.PyNamedElementContainer
 
 class PythonLanguageInfoProvider(override val language: Language = PythonLanguage.INSTANCE) : LanguageInfoProvider {
 
     override fun isClassMember(element: PsiElement): Boolean {
-        return element is PyFunction
+        return element is PyFunction && element.parent?.findCurrentPythonMethod() == null
     }
 
     override fun isClassWithBody(element: PsiElement): Boolean {
