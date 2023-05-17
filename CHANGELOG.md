@@ -2,10 +2,13 @@
 
 # Code Complexity Changelog
 
+## [1.0.0]
+- Python support
+- Colored icon in the editor
+
 ## [0.0.2]
 - Fixed the plugin for IDEA versions 2023.*
 - Added the plugin icon
-
 
 ## [0.0.1]
 - Initial implementation for Java and Kotlin.
