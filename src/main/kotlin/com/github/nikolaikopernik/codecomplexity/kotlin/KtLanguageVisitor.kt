@@ -53,13 +53,13 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     }
 
     override fun postProcess(element: PsiElement) {
-        if ((element is KtWhileExpression) ||
-            (element is KtWhenExpression) ||
-            (element is KtDoWhileExpression) ||
-            ((element is KtIfExpression) && (element.`else` !is KtIfExpression)) ||
-            (element is KtForExpression) ||
-            (element is KtCatchClause) ||
-            (element is KtLambdaExpression)
+        if (element is KtWhileExpression ||
+            element is KtWhenExpression ||
+            element is KtDoWhileExpression ||
+            element is KtForExpression ||
+            element is KtCatchClause ||
+            element is KtLambdaExpression ||
+            element is KtIfExpression && element.`else` !is KtIfExpression
         ) {
             sink.decreaseNesting()
         }
@@ -110,8 +110,8 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
 
     private fun getLogicalOperationsTokens(): TokenSet {
         return TokenSet.create(
-                KtTokens.ANDAND,
-                KtTokens.OROR
+            KtTokens.ANDAND,
+            KtTokens.OROR
         )
     }
 
@@ -167,20 +167,20 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
         for (parent in element.parents) {
             when (parent) {
                 is KtFunctionLiteral -> if (stopOnNonInlinedLambdas && !InlineUtil.isInlinedArgument(
-                                parent,
-                                parent.analyze(),
-                                false
-                        )
+                        parent,
+                        parent.analyze(),
+                        false
+                    )
                 ) return null
 
                 is KtNamedFunction -> {
                     when (parent.parent) {
                         is KtBlockExpression, is KtClassBody, is KtFile, is KtScript -> return parent
                         else -> if (stopOnNonInlinedLambdas && !InlineUtil.isInlinedArgument(
-                                        parent,
-                                        parent.analyze(),
-                                        false
-                                )
+                                parent,
+                                parent.analyze(),
+                                false
+                            )
                         ) return null
                     }
                 }

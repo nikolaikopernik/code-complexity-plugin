@@ -2,6 +2,9 @@
 
 # Code Complexity Changelog
 
+## [1.0.1]
+- Fix NoClassDefFoundError when Python is not installed
+
 ## [1.0.0]
 - Python support
 - Colored icon in the editor

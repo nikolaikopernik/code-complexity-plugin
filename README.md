@@ -7,7 +7,7 @@
 <!-- Plugin description -->
 This plugin calculates code complexity metric right in the editor and shows the complexity in the hint next to the method/class. It's based on the **Cognitive Complexity** metric proposed by G. Ann Campbell in [Cognitive Complexity - A new way of measuring understandability](https://www.sonarsource.com/docs/CognitiveComplexity.pdf).
 
-Works with Java and Kotlin. Python support is the next to implement.
+Works with Java, Kotlin, and Python.
 <!-- Plugin description end -->
 
 ---
@@ -25,6 +25,11 @@ Works with Java and Kotlin. Python support is the next to implement.
   Download the [latest release](https://github.com/nikolaikopernik/code-complexity-plugin/releases/latest) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
+## Release
+- Update version in `gradle.propertied`
+- Update version and description in `CHANGELOG.md`
+- Run `./gradlew publishPlugin`
+- Push to repo with the proper tag
 
 ---
 Plugin based on the [IntelliJ Platform Plugin Template][template].
