@@ -19,11 +19,12 @@ object ComplexitySettings {
     fun getText(complexity: ComplexitySink): String {
         val threshold = if (complexity.getPoints().any { it.type == PointType.METHOD })
             thresholdClass else thresholdMethod
-        val value = complexity.getComplexity() * 100 / threshold
+        val points = complexity.getComplexity()
+        val value = points * 100 / threshold
         return when {
-            value < 100 -> "simple ($value%)"
-            value < 150 -> "mildly complex ($value%)"
-            else -> "very complex ($value%)"
+            value < 100 -> "simple ($value% -> $points points)"
+            value < 150 -> "mildly complex ($value% -> $points points)"
+            else -> "very complex ($value% -> $points points)"
         }
     }
 
