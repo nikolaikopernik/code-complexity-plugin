@@ -25,7 +25,13 @@ Works with Java, Kotlin, and Python.
   Download the [latest release](https://github.com/nikolaikopernik/code-complexity-plugin/releases/latest) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
+## Score
+
+I chose 8 points as a medium complexity method and use it as 100%. This means that all the methods above 100% are good candidates for splitting/improving.
+The formula is: `percentage = points / 8 * 100`
+
 ## Release
+
 - Update version in `gradle.propertied`
 - Update version and description in `CHANGELOG.md`
 - Run `./gradlew publishPlugin`
