@@ -2,6 +2,9 @@
 
 # Code Complexity Changelog
 
+## [1.1.0]
+- Support for IDEA 2023.2
+
 ## [1.0.1]
 - Fix NoClassDefFoundError when Python is not installed
 
