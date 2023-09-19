@@ -17,6 +17,13 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <codeInsight.inlayProviderFactory implementation="com.github.nikolaikopernik.codecomplexity.ui.ComplexityInlayHintsProviderFactory"/>
+
+        <projectConfigurable parentId="tools"
+                             instance="com.github.nikolaikopernik.codecomplexity.settings.SettingsConfigurable"
+                             id="com.github.nikolaikopernik.codecomplexity.settings.SettingsConfigurable"
+                             displayName="Code Complexity"
+                             nonDefaultProject="true"/>
+        <applicationService serviceImplementation="com.github.nikolaikopernik.codecomplexity.settings.SettingsState"/>
     </extensions>
 
 <!--    <applicationListeners>-->
