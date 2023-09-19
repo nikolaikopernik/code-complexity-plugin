@@ -2,6 +2,9 @@
 
 # Code Complexity Changelog
 
+## [1.2.0]
+- Complexity thresholds are now configurable via Settings -> Tools -> Code Complexity
+
 ## [1.1.0]
 - Support for IDEA 2023.2
 
