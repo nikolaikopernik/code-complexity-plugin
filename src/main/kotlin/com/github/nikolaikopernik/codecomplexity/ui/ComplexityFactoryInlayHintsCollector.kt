@@ -5,6 +5,7 @@ import com.github.nikolaikopernik.codecomplexity.core.LanguageInfoProvider
 import com.github.nikolaikopernik.codecomplexity.core.PLUGIN_EP_NAME
 import com.github.nikolaikopernik.codecomplexity.core.PointType
 import com.github.nikolaikopernik.codecomplexity.settings.ComplexitySettings
+import com.github.nikolaikopernik.codecomplexity.settings.SettingsState
 import com.intellij.codeInsight.hints.FactoryInlayHintsCollector
 import com.intellij.codeInsight.hints.InlayHintsSink
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
@@ -21,7 +22,7 @@ import com.intellij.psi.util.CachedValuesManager
 @Suppress("UnstableApiUsage")
 class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: LanguageInfoProvider,
                                            private val editor: Editor) : FactoryInlayHintsCollector(editor) {
-
+    private val setting: SettingsState = SettingsState.INSTANCE
 
     private fun getClassComplexity(element: PsiElement): ComplexitySink {
         return ComplexitySink().also { sink ->
@@ -76,7 +77,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
                     ScaledIconPresentation(
                         InlayTextMetricsStorage(editor),
                         true,
-                        ComplexitySettings.getIcon(complexityScore),
+                        ComplexitySettings.getIcon(complexityScore, setting),
                         editor.component),
                     top = 6),
                 InsetPresentation(getTextPresentation(complexityScore, editor), top = 2)
@@ -85,7 +86,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
     }
 
     private fun getTextPresentation(complexity: ComplexitySink, editor: Editor): InlayPresentation =
-        InsetPresentation(factory.text(ComplexitySettings.getText(complexity)),
+        InsetPresentation(factory.text(ComplexitySettings.getText(complexity, setting)),
                           top = 4, down = 4, left = 6, right = 6)
 
     override fun equals(other: Any?): Boolean {
