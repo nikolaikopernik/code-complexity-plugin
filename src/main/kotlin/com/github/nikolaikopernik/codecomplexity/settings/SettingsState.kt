@@ -14,6 +14,7 @@ const val DEFAULT_LIMIT_VERY_COMPLEX: Int = 12
 class SettingsState : PersistentStateComponent<SettingsState> {
     var useDefaults: Boolean = true
     var usePlainComplexity: Boolean = false
+    var showIcon: Boolean = true
     var limitSimpleLessThan: Int = DEFAULT_LIMIT_SIMPLE
     var limitVeryComplexMoreThan: Int = DEFAULT_LIMIT_VERY_COMPLEX
     override fun getState(): SettingsState {

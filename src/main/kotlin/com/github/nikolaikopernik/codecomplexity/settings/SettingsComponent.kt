@@ -29,6 +29,7 @@ class SettingsComponent {
         """)
     private val useDefaults = JBCheckBox("Use default values ")
     private val showOriginalScore = JBCheckBox("Show the original score instead of percentages ")
+    private val showIcon = JBCheckBox("Show icon next to complexity score ")
     private val simpleLimit = IntegerField("Complexity score for simple methods:", 1, 100)
     private val veryComplexLimit = IntegerField("Complexity score for very complex methods:", 2, 100)
 
@@ -43,6 +44,7 @@ class SettingsComponent {
             .addComponent(JPanel())
             .addComponent(limits)
             .addComponent(showOriginalScore)
+            .addComponent(showIcon)
             .addComponentFillVertically(JPanel(), 0)
             .panel
 
@@ -69,6 +71,10 @@ class SettingsComponent {
         this.showOriginalScore.setSelected(showPlainComplexity)
     }
 
+    fun setShowIcon(showIcon: Boolean) {
+        this.showIcon.setSelected(showIcon)
+    }
+
     fun setSimpleLimit(simpleLimit: Int){
         this.simpleLimit.value = simpleLimit
     }
@@ -80,6 +86,8 @@ class SettingsComponent {
     fun getUseDefaults(): Boolean = useDefaults.selected.invoke()
 
     fun getShowPlainComplexity(): Boolean = showOriginalScore.selected.invoke()
+
+    fun getShowIcon(): Boolean = showIcon.selected.invoke()
 
     fun getSimpleLimit(): Int = simpleLimit.value
 
