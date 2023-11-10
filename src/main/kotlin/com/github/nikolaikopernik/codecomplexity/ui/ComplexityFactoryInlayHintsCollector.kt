@@ -71,8 +71,9 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
     }
 
     private fun getPresentation(element: PsiElement, complexityScore: ComplexitySink): InlayPresentation? {
-        return InsetPresentation(
-            SequencePresentation(listOf(
+        val insetPresentations = mutableListOf<InsetPresentation>()
+        if (setting.showIcon) {
+            insetPresentations.add(
                 InsetPresentation(
                     ScaledIconPresentation(
                         InlayTextMetricsStorage(editor),
@@ -80,9 +81,10 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
                         ComplexitySettings.getIcon(complexityScore, setting),
                         editor.component),
                     top = 6),
-                InsetPresentation(getTextPresentation(complexityScore, editor), top = 2)
-            ))
-        )
+            )
+        }
+        insetPresentations.add(InsetPresentation(getTextPresentation(complexityScore, editor), top = 2))
+        return InsetPresentation(SequencePresentation(insetPresentations))
     }
 
     private fun getTextPresentation(complexity: ComplexitySink, editor: Editor): InlayPresentation =

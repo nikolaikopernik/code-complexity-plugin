@@ -16,6 +16,7 @@ class SettingsConfigurable(val project: Project): Configurable {
         val state = SettingsState.INSTANCE
         return state.useDefaults != component?.getUseDefaults() ||
             state.usePlainComplexity != component?.getShowPlainComplexity() ||
+            state.showIcon != component?.getShowIcon() ||
             state.limitSimpleLessThan != component?.getSimpleLimit() ||
             state.limitVeryComplexMoreThan != component?.getVeryComplexLimit()
     }
@@ -25,6 +26,7 @@ class SettingsConfigurable(val project: Project): Configurable {
         with(state){
             useDefaults = component!!.getUseDefaults()
             usePlainComplexity= component!!.getShowPlainComplexity()
+            showIcon = component!!.getShowIcon()
             limitSimpleLessThan = component!!.getSimpleLimit()
             limitVeryComplexMoreThan = component!!.getVeryComplexLimit()
         }
@@ -37,6 +39,7 @@ class SettingsConfigurable(val project: Project): Configurable {
             it.setVeryComplexLimit(settings.limitVeryComplexMoreThan)
             it.setUseDefaults(settings.useDefaults)
             it.setShowPlainComplexity(settings.usePlainComplexity)
+            it.setShowIcon(settings.showIcon)
         }
     }
 
