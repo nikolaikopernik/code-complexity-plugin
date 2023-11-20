@@ -29,7 +29,7 @@ class SettingsComponent {
         """)
     private val useDefaults = JBCheckBox("Use default values ")
     private val showOriginalScore = JBCheckBox("Show the original score instead of percentages ")
-    private val showIcon = JBCheckBox("Show icon next to complexity score ")
+    private val showIcon = JBCheckBox("Show icon next to the complexity score ")
     private val simpleLimit = IntegerField("Complexity score for simple methods:", 1, 100)
     private val veryComplexLimit = IntegerField("Complexity score for very complex methods:", 2, 100)
 

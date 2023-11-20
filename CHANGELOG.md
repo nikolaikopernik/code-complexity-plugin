@@ -2,6 +2,9 @@
 
 # Code Complexity Changelog
 
+## [1.2.1]
+- Showing of the complexity icon now can be disabled via Settings -> Tools -> Code Complexity
+
 ## [1.2.0]
 - Complexity thresholds are now configurable via Settings -> Tools -> Code Complexity
 

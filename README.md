@@ -32,7 +32,7 @@ The formula is: `percentage = points / 8 * 100`
 
 ## Release
 
-- Update version in `gradle.propertied`
+- Update version in `gradle.properties`
 - Update version and description in `CHANGELOG.md`
 - Run `./gradlew publishPlugin`
 - Push to repo with the proper tag
