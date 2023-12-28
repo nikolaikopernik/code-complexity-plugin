@@ -9,14 +9,20 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 const val DEFAULT_LIMIT_SIMPLE: Int = 8
 const val DEFAULT_LIMIT_VERY_COMPLEX: Int = 12
 
+/**
+ * This state holds the main settings for the plugin.
+ * [ComplexitySettings.kt] just adds some functions to work with these settings.
+ */
 @State(name = "com.github.nikolaikopernik.codecomplexity.settings.SettingsState",
        storages = [Storage("code-complexity-settings.xml")])
 class SettingsState : PersistentStateComponent<SettingsState> {
+
     var useDefaults: Boolean = true
     var usePlainComplexity: Boolean = false
     var showIcon: Boolean = true
     var limitSimpleLessThan: Int = DEFAULT_LIMIT_SIMPLE
     var limitVeryComplexMoreThan: Int = DEFAULT_LIMIT_VERY_COMPLEX
+
     override fun getState(): SettingsState {
         return this
     }

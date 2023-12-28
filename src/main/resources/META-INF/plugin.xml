@@ -24,6 +24,18 @@
                              displayName="Code Complexity"
                              nonDefaultProject="true"/>
         <applicationService serviceImplementation="com.github.nikolaikopernik.codecomplexity.settings.SettingsState"/>
+
+        <localInspection language="kotlin"
+                         groupPath="Kotlin"
+                         shortName="HighComplexity"
+                         bundle="messages.ComplexityBundle"
+                         key="inspection.complexity.string.display.name"
+                         hasStaticDescription="true"
+                         groupBundle="messages.ComplexityBundle"
+                         groupKey="inspection.complexity.string.group"
+                         enabledByDefault="false"
+                         level="WARNING"
+                         implementationClass="com.github.nikolaikopernik.codecomplexity.core.KtHighComplexityInspection"/>
     </extensions>
 
 <!--    <applicationListeners>-->

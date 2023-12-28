@@ -4,8 +4,9 @@ import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
 import com.github.nikolaikopernik.codecomplexity.core.LanguageInfoProvider
 import com.github.nikolaikopernik.codecomplexity.core.PLUGIN_EP_NAME
 import com.github.nikolaikopernik.codecomplexity.core.PointType
-import com.github.nikolaikopernik.codecomplexity.settings.ComplexitySettings
 import com.github.nikolaikopernik.codecomplexity.settings.SettingsState
+import com.github.nikolaikopernik.codecomplexity.settings.getConfiguredIcon
+import com.github.nikolaikopernik.codecomplexity.settings.getConfiguredText
 import com.intellij.codeInsight.hints.FactoryInlayHintsCollector
 import com.intellij.codeInsight.hints.InlayHintsSink
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
@@ -38,6 +39,10 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
         }
     }
 
+    /**
+     * Main method to go other the editor elements and collect inlay hints.
+     * This method makes the class to work as a visitor.
+     */
     override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
         val complexityScore = if (languageInfoProvider.isClassWithBody(element)) {
             getClassComplexity(element)
@@ -78,7 +83,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
                     ScaledIconPresentation(
                         InlayTextMetricsStorage(editor),
                         true,
-                        ComplexitySettings.getIcon(complexityScore, setting),
+                        complexityScore.getConfiguredIcon(),
                         editor.component),
                     top = 6),
             )
@@ -88,7 +93,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
     }
 
     private fun getTextPresentation(complexity: ComplexitySink, editor: Editor): InlayPresentation =
-        InsetPresentation(factory.text(ComplexitySettings.getText(complexity, setting)),
+        InsetPresentation(factory.text(complexity.getConfiguredText()),
                           top = 4, down = 4, left = 6, right = 6)
 
     override fun equals(other: Any?): Boolean {
@@ -101,22 +106,26 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
     override fun hashCode(): Int {
         return editor.hashCode()
     }
+}
 
-    private fun PsiElement.findProviderForElement(): LanguageInfoProvider {
-        val language = this.language
-        val provider = PLUGIN_EP_NAME.findFirstSafe { it.language == language }
-        checkNotNull(provider) { "Failed to obtain LanguageInfoProvider for language with id: ${language.id}" }
-        return provider
+/**
+ * Cached version of complexity.
+ * Use this one as it speeds up the calculations.
+ */
+fun PsiElement.obtainElementComplexity(): ComplexitySink {
+    return CachedValuesManager.getCachedValue(this) {
+        // Search for the first provider with the same language on every recompute,
+        // so there is no dependency on the reference to that provider.
+        val provider = this.findProviderForElement()
+        val sink = ComplexitySink()
+        this.accept(provider.getVisitor(sink))
+        CachedValueProvider.Result.create(sink, this)
     }
+}
 
-    private fun PsiElement.obtainElementComplexity(): ComplexitySink {
-        return CachedValuesManager.getCachedValue(this) {
-            // Search for the first provider with the same language on every recompute,
-            // so there is no dependency on the reference to that provider.
-            val provider = this.findProviderForElement()
-            val sink = ComplexitySink()
-            this.accept(provider.getVisitor(sink))
-            CachedValueProvider.Result.create(sink, this)
-        }
-    }
+private fun PsiElement.findProviderForElement(): LanguageInfoProvider {
+    val language = this.language
+    val provider = PLUGIN_EP_NAME.findFirstSafe { it.language == language }
+    checkNotNull(provider) { "Failed to obtain LanguageInfoProvider for language with id: ${language.id}" }
+    return provider
 }
