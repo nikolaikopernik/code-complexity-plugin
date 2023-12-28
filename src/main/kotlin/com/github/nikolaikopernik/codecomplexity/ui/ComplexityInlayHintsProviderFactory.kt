@@ -11,11 +11,4 @@ internal class ComplexityInlayHintsProviderFactory : InlayHintsProviderFactory {
     override fun getProvidersInfo(): List<ProviderInfo<out Any>> {
         return PLUGIN_EP_NAME.extensionList.map { ProviderInfo(it.language, ComplexityInlayHintsProvider(it)) }
     }
-
-    /**
-     * For compatibility with builds 222.*
-     */
-    override fun getProvidersInfo(project: Project): List<ProviderInfo<out Any>> {
-        return getProvidersInfo()
-    }
 }
