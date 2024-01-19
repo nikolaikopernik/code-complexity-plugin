@@ -16,23 +16,34 @@ object ComplexitySettings {
 
     private var settings = SettingsState.INSTANCE
 
+    private fun templateReplace(vararg params: String): String {
+        val template = settings.templateText
+        return if (params.isEmpty()) {
+            template
+        } else {
+            params.fold(template) { acc, param ->
+                acc.replace("{${params.indexOf(param)}}", param)
+            }
+        }
+    }
+
     fun getText(complexity: ComplexitySink, state: SettingsState): String {
         val value = complexity.getComplexity()
         return if (state.usePlainComplexity) {
             state.determineLevel(value,
                                  complexity.getPoints().any { it.type == PointType.METHOD },
-                                 { "${settings.simpleComplexText} ($value)" },
-                                 { "${settings.mildlyComplexText} ($value)" },
-                                 { "${settings.veryComplexText} ($value)" })
+                                 { templateReplace(settings.simpleComplexText, "$value") },
+                                 { templateReplace(settings.mildlyComplexText, "$value") },
+                                 { templateReplace(settings.veryComplexText, "$value") })
         } else {
             val threshold = if (complexity.getPoints().any { it.type == PointType.METHOD })
                 state.limitSimpleLessThan * 4 else state.limitSimpleLessThan
             val pncValue = complexity.getComplexity() * 100 / threshold
             state.determineLevel(value,
                                  complexity.getPoints().any { it.type == PointType.METHOD },
-                                 { "${settings.simpleComplexText} ($pncValue%)" },
-                                 { "${settings.mildlyComplexText} ($pncValue%)" },
-                                 { "${settings.veryComplexText} ($pncValue%)" })
+                                 { templateReplace(settings.simpleComplexText, "$pncValue%") },
+                                 { templateReplace(settings.mildlyComplexText, "$pncValue%") },
+                                 { templateReplace(settings.veryComplexText, "$pncValue%") })
         }
     }
 

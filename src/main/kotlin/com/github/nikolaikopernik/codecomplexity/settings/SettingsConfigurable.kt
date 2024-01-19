@@ -21,7 +21,8 @@ class SettingsConfigurable(val project: Project) : Configurable {
             state.limitVeryComplexMoreThan != component?.getVeryComplexLimit() ||
             state.simpleComplexText != component?.getSimpleComplexText() ||
             state.mildlyComplexText != component?.getMildlyComplexText() ||
-            state.veryComplexText != component?.getVeryComplexText()
+            state.veryComplexText != component?.getVeryComplexText() ||
+            state.templateText != component?.getTemplateText()
     }
 
     override fun apply() {
@@ -35,6 +36,7 @@ class SettingsConfigurable(val project: Project) : Configurable {
             simpleComplexText = component!!.getSimpleComplexText()
             mildlyComplexText = component!!.getMildlyComplexText()
             veryComplexText = component!!.getVeryComplexText()
+            templateText = component!!.getTemplateText()
         }
     }
 
@@ -49,6 +51,7 @@ class SettingsConfigurable(val project: Project) : Configurable {
             it.setSimpleComplexText(settings.simpleComplexText)
             it.setMildlyComplexText(settings.mildlyComplexText)
             it.setVeryComplexText(settings.veryComplexText)
+            it.setTemplateText(settings.templateText)
         }
     }
 
