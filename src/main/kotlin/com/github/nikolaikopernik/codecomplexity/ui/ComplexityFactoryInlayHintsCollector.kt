@@ -53,7 +53,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
     }
 
     private fun applySinkResults(element: PsiElement, score: ComplexitySink, sink: InlayHintsSink) {
-        getPresentation(element, score)?.let {
+        getPresentation(element, score).let {
             sink.addInlineElement(
                 offset = element.textOffset,
                 relatesToPrecedingText = true,
@@ -70,7 +70,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
         return factory.seq(factory.textSpacePlaceholder(column, true), this)
     }
 
-    private fun getPresentation(element: PsiElement, complexityScore: ComplexitySink): InlayPresentation? {
+    private fun getPresentation(element: PsiElement, complexityScore: ComplexitySink): InlayPresentation {
         val insetPresentations = mutableListOf<InsetPresentation>()
         if (setting.showIcon) {
             insetPresentations.add(

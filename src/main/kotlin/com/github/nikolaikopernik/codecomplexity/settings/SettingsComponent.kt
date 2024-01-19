@@ -30,10 +30,11 @@ class SettingsComponent {
     private val customSimpleField = JBTextField(SettingsBundle.message("simpleComplexDefaultText"))
     private val customMildlyComplexField = JBTextField(SettingsBundle.message("mildlyComplexDefaultText"))
     private val customVeryComplexField = JBTextField(SettingsBundle.message("veryComplexDefaultText"))
-    private val customTemplateField = JBTextField(SettingsBundle.message("customTemplateDefaultText"))
+    private val customTemplateField = JBTextField(SettingsBundle.message("customTemplateDefaultText", "{0}", "{1}"))
 
     init {
-        HelpTooltip().setDescription(SettingsBundle.message("customTemplateToolTip")).installOn(customTemplateField)
+        HelpTooltip().setDescription(SettingsBundle.message("customTemplateToolTip", "{0}", "{1}"))
+            .installOn(customTemplateField)
         val limits = JPanel(BorderLayout())
         limits.border = IdeBorderFactory.createTitledBorder(SettingsBundle.message("limitsLabel"))
         limits.add(useDefaults, BorderLayout.NORTH)
@@ -44,8 +45,8 @@ class SettingsComponent {
         customText.border = IdeBorderFactory.createTitledBorder(SettingsBundle.message("customDescriptionText"))
         customText.add(LabelledComponent(SettingsBundle.message("customSimpleComplexLabel"), customSimpleField))
         customText.add(LabelledComponent(SettingsBundle.message("customMildlyComplexLabel"), customMildlyComplexField))
-        customText.add(LabelledComponent(SettingsBundle.message("customTemplateLabel"), customTemplateField))
         customText.add(LabelledComponent(SettingsBundle.message("customVeryComplexLabel"), customVeryComplexField))
+        customText.add(LabelledComponent(SettingsBundle.message("customTemplateLabel"), customTemplateField))
         panel = FormBuilder.createFormBuilder()
             .addComponent(explanationText)
             .addComponent(JPanel())
