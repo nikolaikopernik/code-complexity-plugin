@@ -1,5 +1,6 @@
 package com.github.nikolaikopernik.codecomplexity.settings
 
+import com.github.nikolaikopernik.codecomplexity.bundle.SettingsBundle
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
@@ -17,6 +18,9 @@ class SettingsState : PersistentStateComponent<SettingsState> {
     var showIcon: Boolean = true
     var limitSimpleLessThan: Int = DEFAULT_LIMIT_SIMPLE
     var limitVeryComplexMoreThan: Int = DEFAULT_LIMIT_VERY_COMPLEX
+    var simpleComplexText:String=SettingsBundle.message("simpleComplexDefaultText")
+    var mildlyComplexText:String=SettingsBundle.message("mildlyComplexDefaultText")
+    var veryComplexText:String=SettingsBundle.message("veryComplexDefaultText")
     override fun getState(): SettingsState {
         return this
     }
