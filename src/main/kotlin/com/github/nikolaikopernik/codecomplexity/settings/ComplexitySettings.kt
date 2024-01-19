@@ -14,23 +14,25 @@ object ComplexitySettings {
 
     private val icons = mutableMapOf<Color, Icon>()
 
+    private var settings = SettingsState.INSTANCE
+
     fun getText(complexity: ComplexitySink, state: SettingsState): String {
         val value = complexity.getComplexity()
         return if (state.usePlainComplexity) {
             state.determineLevel(value,
                                  complexity.getPoints().any { it.type == PointType.METHOD },
-                                 { "simple ($value)" },
-                                 { "mildly complex ($value)" },
-                                 { "very complex ($value)" })
+                                 { "${settings.simpleComplexText} ($value)" },
+                                 { "${settings.mildlyComplexText} ($value)" },
+                                 { "${settings.veryComplexText} ($value)" })
         } else {
             val threshold = if (complexity.getPoints().any { it.type == PointType.METHOD })
                 state.limitSimpleLessThan * 4 else state.limitSimpleLessThan
             val pncValue = complexity.getComplexity() * 100 / threshold
             state.determineLevel(value,
                                  complexity.getPoints().any { it.type == PointType.METHOD },
-                                 { "simple ($pncValue%)" },
-                                 { "mildly complex ($pncValue%)" },
-                                 { "very complex ($pncValue%)" })
+                                 { "${settings.simpleComplexText} ($pncValue%)" },
+                                 { "${settings.mildlyComplexText} ($pncValue%)" },
+                                 { "${settings.veryComplexText} ($pncValue%)" })
         }
     }
 

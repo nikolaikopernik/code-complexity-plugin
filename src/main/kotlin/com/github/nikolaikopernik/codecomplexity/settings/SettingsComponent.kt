@@ -1,14 +1,18 @@
 package com.github.nikolaikopernik.codecomplexity.settings
 
+import com.github.nikolaikopernik.codecomplexity.bundle.SettingsBundle
+import com.intellij.ide.HelpTooltip
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.fields.IntegerField
 import com.intellij.ui.layout.selected
 import com.intellij.ui.util.maximumWidth
 import com.intellij.util.ui.FormBuilder
 import java.awt.BorderLayout
 import java.awt.event.ItemEvent
+import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -17,41 +21,45 @@ import javax.swing.JPanel
  */
 class SettingsComponent {
     val panel: JPanel
-    private val explanationText = JBLabel("""<html>
-        Language constructions which increase the complexity add +1 to the complexity score. <br>
-        Nesting increases this rate proportionally to the nesting level. <br>
-        The sum of all the scores for a method determines it's complexity. <br>
-        By default, method is highlighted as simple if it's complexity is less then 8 (and <br>
-        very complex if it's more than 12) but using this form you can adjust these limits. <br>
-        <br>
-        For classes the complexity limits are calculated as `4 * method complexity limits`.
-        </html>
-        """)
-    private val useDefaults = JBCheckBox("Use default values ")
-    private val showOriginalScore = JBCheckBox("Show the original score instead of percentages ")
-    private val showIcon = JBCheckBox("Show icon next to the complexity score ")
-    private val simpleLimit = IntegerField("Complexity score for simple methods:", 1, 100)
-    private val veryComplexLimit = IntegerField("Complexity score for very complex methods:", 2, 100)
+    private val explanationText = JBLabel(SettingsBundle.message("explanationText"))
+    private val useDefaults = JBCheckBox(SettingsBundle.message("useDefaults"))
+    private val showOriginalScore = JBCheckBox(SettingsBundle.message("showOriginalScore"))
+    private val showIcon = JBCheckBox(SettingsBundle.message("showIcon"))
+    private val simpleLimit = IntegerField(null, 1, 100)
+    private val veryComplexLimit = IntegerField(null, 2, 100)
+    private val customSimpleField = JBTextField(SettingsBundle.message("simpleComplexDefaultText"))
+    private val customMildlyComplexField = JBTextField(SettingsBundle.message("mildlyComplexDefaultText"))
+    private val customVeryComplexField = JBTextField(SettingsBundle.message("veryComplexDefaultText"))
+    private val customTemplateField = JBTextField("{0} ({1})")
 
     init {
+        HelpTooltip().setDescription(SettingsBundle.message("customTempateToolTip")).installOn(customTemplateField)
         val limits = JPanel(BorderLayout())
-        limits.border = IdeBorderFactory.createTitledBorder("Limits")
+        limits.border = IdeBorderFactory.createTitledBorder(SettingsBundle.message("limitsLabel"))
         limits.add(useDefaults, BorderLayout.NORTH)
-        limits.add(LabelledComponent("Simple score less than: ", simpleLimit), BorderLayout.CENTER)
-        limits.add(LabelledComponent("Very complex score more than: ", veryComplexLimit), BorderLayout.SOUTH)
+        limits.add(LabelledComponent(SettingsBundle.message("simpleComplexScoreLimit"), simpleLimit), BorderLayout.CENTER)
+        limits.add(LabelledComponent(SettingsBundle.message("veryComplexScoreLimit"), veryComplexLimit), BorderLayout.SOUTH)
+        val customText = JPanel()
+        customText.layout = BoxLayout(customText, BoxLayout.Y_AXIS)
+        customText.border = IdeBorderFactory.createTitledBorder(SettingsBundle.message("customDescriptionText"))
+        customText.add(LabelledComponent(SettingsBundle.message("customSimpleComplexLabel"), customSimpleField))
+        customText.add(LabelledComponent(SettingsBundle.message("customMildlyComplexLabel"), customMildlyComplexField))
+        customText.add(LabelledComponent(SettingsBundle.message("customTemplateLabel"), customTemplateField))
+        customText.add(LabelledComponent(SettingsBundle.message("customVeryComplexLabel"), customVeryComplexField))
         panel = FormBuilder.createFormBuilder()
             .addComponent(explanationText)
             .addComponent(JPanel())
             .addComponent(limits)
+            .addComponent(customText)
             .addComponent(showOriginalScore)
             .addComponent(showIcon)
             .addComponentFillVertically(JPanel(), 0)
             .panel
 
-        useDefaults.addItemListener(){
+        useDefaults.addItemListener {
             simpleLimit.setEnabled(it.stateChange != ItemEvent.SELECTED)
             veryComplexLimit.setEnabled(it.stateChange != ItemEvent.SELECTED)
-            if(useDefaults.isSelected){
+            if (useDefaults.isSelected) {
                 simpleLimit.value = DEFAULT_LIMIT_SIMPLE
                 veryComplexLimit.value = DEFAULT_LIMIT_VERY_COMPLEX
             }
@@ -63,11 +71,11 @@ class SettingsComponent {
     val preferredFocusedComponent: JComponent
         get() = useDefaults
 
-    fun setUseDefaults(useDefaults: Boolean){
+    fun setUseDefaults(useDefaults: Boolean) {
         this.useDefaults.setSelected(useDefaults)
     }
 
-    fun setShowPlainComplexity(showPlainComplexity: Boolean){
+    fun setShowPlainComplexity(showPlainComplexity: Boolean) {
         this.showOriginalScore.setSelected(showPlainComplexity)
     }
 
@@ -75,12 +83,24 @@ class SettingsComponent {
         this.showIcon.setSelected(showIcon)
     }
 
-    fun setSimpleLimit(simpleLimit: Int){
+    fun setSimpleLimit(simpleLimit: Int) {
         this.simpleLimit.value = simpleLimit
     }
 
-    fun setVeryComplexLimit(veryComplexLimit: Int){
+    fun setVeryComplexLimit(veryComplexLimit: Int) {
         this.veryComplexLimit.value = veryComplexLimit
+    }
+
+    fun setSimpleComplexText(text: String) {
+        this.customSimpleField.text = text
+    }
+
+    fun setMildlyComplexText(text: String) {
+        this.customMildlyComplexField.text = text
+    }
+
+    fun setVeryComplexText(text: String) {
+        this.customVeryComplexField.text = text
     }
 
     fun getUseDefaults(): Boolean = useDefaults.selected.invoke()
@@ -91,5 +111,11 @@ class SettingsComponent {
 
     fun getSimpleLimit(): Int = simpleLimit.value
 
-    fun getVeryComplexLimit():Int = veryComplexLimit.value
+    fun getVeryComplexLimit(): Int = veryComplexLimit.value
+
+    fun getSimpleComplexText(): String = customSimpleField.text
+
+    fun getMildlyComplexText(): String = customMildlyComplexField.text
+
+    fun getVeryComplexText(): String = customVeryComplexField.text
 }
