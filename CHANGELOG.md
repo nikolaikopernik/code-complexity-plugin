@@ -2,8 +2,12 @@
 
 # Code Complexity Changelog
 
+## [1.4.0]
+- Hint text in editor is now configurable.
+- Added Chinese translation
+
 ## [1.3.0]
-- Changed: Updated the plugin compatibility version to 2023.3. Users on 2023.3 and later can now use the plugin.
+- Updated the plugin compatibility version to 2023.3. Users on 2023.3 and later can now use the plugin.
 
 ## [1.2.1]
 - Showing of the complexity icon now can be disabled via Settings -> Tools -> Code Complexity
