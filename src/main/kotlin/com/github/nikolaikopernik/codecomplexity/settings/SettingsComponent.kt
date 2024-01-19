@@ -30,10 +30,10 @@ class SettingsComponent {
     private val customSimpleField = JBTextField(SettingsBundle.message("simpleComplexDefaultText"))
     private val customMildlyComplexField = JBTextField(SettingsBundle.message("mildlyComplexDefaultText"))
     private val customVeryComplexField = JBTextField(SettingsBundle.message("veryComplexDefaultText"))
-    private val customTemplateField = JBTextField("{0} ({1})")
+    private val customTemplateField = JBTextField(SettingsBundle.message("customTemplateDefaultText"))
 
     init {
-        HelpTooltip().setDescription(SettingsBundle.message("customTempateToolTip")).installOn(customTemplateField)
+        HelpTooltip().setDescription(SettingsBundle.message("customTemplateToolTip")).installOn(customTemplateField)
         val limits = JPanel(BorderLayout())
         limits.border = IdeBorderFactory.createTitledBorder(SettingsBundle.message("limitsLabel"))
         limits.add(useDefaults, BorderLayout.NORTH)
@@ -103,6 +103,10 @@ class SettingsComponent {
         this.customVeryComplexField.text = text
     }
 
+    fun setTemplateText(text: String) {
+        this.customTemplateField.text = text
+    }
+
     fun getUseDefaults(): Boolean = useDefaults.selected.invoke()
 
     fun getShowPlainComplexity(): Boolean = showOriginalScore.selected.invoke()
@@ -118,4 +122,6 @@ class SettingsComponent {
     fun getMildlyComplexText(): String = customMildlyComplexField.text
 
     fun getVeryComplexText(): String = customVeryComplexField.text
+
+    fun getTemplateText(): String = customTemplateField.text
 }
