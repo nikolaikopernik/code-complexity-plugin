@@ -18,10 +18,10 @@ class SettingsState : PersistentStateComponent<SettingsState> {
     var showIcon: Boolean = true
     var limitSimpleLessThan: Int = DEFAULT_LIMIT_SIMPLE
     var limitVeryComplexMoreThan: Int = DEFAULT_LIMIT_VERY_COMPLEX
-    var simpleComplexText:String=SettingsBundle.message("simpleComplexDefaultText")
-    var mildlyComplexText:String=SettingsBundle.message("mildlyComplexDefaultText")
-    var veryComplexText:String=SettingsBundle.message("veryComplexDefaultText")
-    var templateText:String=SettingsBundle.message("customTemplateDefaultText")
+    var simpleComplexText: String = SettingsBundle.message("simpleComplexDefaultText")
+    var mildlyComplexText: String = SettingsBundle.message("mildlyComplexDefaultText")
+    var veryComplexText: String = SettingsBundle.message("veryComplexDefaultText")
+    var templateText: String = SettingsBundle.message("customTemplateDefaultText", "{0}", "{1}")
     override fun getState(): SettingsState {
         return this
     }

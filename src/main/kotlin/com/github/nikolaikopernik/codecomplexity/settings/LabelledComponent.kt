@@ -8,8 +8,8 @@ import javax.swing.JPanel
 /**
  * A simple wrapper for label + component combination
  */
-class LabelledComponent(private val description: String,
-                        private val component: JComponent) : JPanel(BorderLayout()) {
+class LabelledComponent(description: String,
+                        component: JComponent) : JPanel(BorderLayout()) {
     init {
         this.add(JBLabel(description), BorderLayout.WEST)
         this.add(component, BorderLayout.CENTER)

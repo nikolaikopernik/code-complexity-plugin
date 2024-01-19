@@ -4,6 +4,7 @@ import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
 import com.github.nikolaikopernik.codecomplexity.core.PointType
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.util.IconLoader
+import com.intellij.ui.JBColor
 import java.awt.Color
 import javax.swing.Icon
 
@@ -86,7 +87,7 @@ private fun String.parseColor() = Color(this.drop(1).toInt(16), false)
 
 fun Color.getContrastColor(): Color {
     val y = (299 * this.red + 587 * this.green + 114 * this.blue) / 1000.0
-    return if (y >= 128) Color.black else Color.white
+    return if (y >= 128) JBColor.BLACK else JBColor.WHITE
 }
 
-fun Color.toHex(): String = String.format("#%02x%02x%02x", this.red, this.green, this.blue);
+fun Color.toHex(): String = String.format("#%02x%02x%02x", this.red, this.green, this.blue)

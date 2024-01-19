@@ -137,7 +137,7 @@ private fun PsiMethodCallExpression.isRecursion(): Boolean {
 }
 
 private fun PsiElement.findCurrentMethod(): PsiMethod? {
-    var element: PsiElement? = this;
+    var element: PsiElement? = this
     while (element != null && element !is PsiMethod) element = element.parent
     return element?.let { it as PsiMethod }
 }
@@ -157,7 +157,7 @@ private fun PsiIfStatement.prevNotWhitespace(): PsiElement? {
             return prev
         }
     }
-    return null;
+    return null
 }
 
 

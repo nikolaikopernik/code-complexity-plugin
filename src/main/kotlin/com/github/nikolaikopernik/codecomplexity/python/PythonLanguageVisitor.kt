@@ -101,11 +101,11 @@ internal class PythonLanguageVisitor(private val sink: ComplexitySink) : Element
     private fun PyCallExpression.isRecursion(): Boolean {
         val parentMethod: PyFunction = this.findCurrentPythonMethod() ?: return false
         if (this.callee?.text != parentMethod.name) return false
-        if (this.arguments?.size != parentMethod.parameterList.parameters?.size) return false
+        if (this.arguments.size != parentMethod.parameterList.parameters.size) return false
         return true
     }
 
-    fun IElementType.toPointType(): PointType =
+    private fun IElementType.toPointType(): PointType =
         when (this) {
             PyTokenTypes.OR_KEYWORD -> PointType.LOGICAL_OR
 
