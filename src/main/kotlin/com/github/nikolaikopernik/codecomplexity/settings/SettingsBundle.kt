@@ -1,4 +1,4 @@
-package com.github.nikolaikopernik.codecomplexity.bundle
+package com.github.nikolaikopernik.codecomplexity.settings
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

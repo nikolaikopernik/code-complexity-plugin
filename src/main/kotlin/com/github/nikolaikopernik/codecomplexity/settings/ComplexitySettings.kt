@@ -17,34 +17,23 @@ object ComplexitySettings {
 
     private var settings = SettingsState.INSTANCE
 
-    private fun templateReplace(vararg params: String): String {
-        val template = settings.templateText
-        return if (params.isEmpty()) {
-            template
-        } else {
-            params.fold(template) { acc, param ->
-                acc.replace("{${params.indexOf(param)}}", param)
-            }
-        }
-    }
-
     fun getText(complexity: ComplexitySink, state: SettingsState): String {
         val value = complexity.getComplexity()
         return if (state.usePlainComplexity) {
             state.determineLevel(value,
                                  complexity.getPoints().any { it.type == PointType.METHOD },
-                                 { templateReplace(settings.simpleComplexText, "$value") },
-                                 { templateReplace(settings.mildlyComplexText, "$value") },
-                                 { templateReplace(settings.veryComplexText, "$value") })
+                                 { customHintTextWithScore(settings.hintTextSimpleComplex, "$value") },
+                                 { customHintTextWithScore(settings.hintTextMildlyComplex, "$value") },
+                                 { customHintTextWithScore(settings.hintTextVeryComplex, "$value") })
         } else {
             val threshold = if (complexity.getPoints().any { it.type == PointType.METHOD })
                 state.limitSimpleLessThan * 4 else state.limitSimpleLessThan
             val pncValue = complexity.getComplexity() * 100 / threshold
             state.determineLevel(value,
                                  complexity.getPoints().any { it.type == PointType.METHOD },
-                                 { templateReplace(settings.simpleComplexText, "$pncValue%") },
-                                 { templateReplace(settings.mildlyComplexText, "$pncValue%") },
-                                 { templateReplace(settings.veryComplexText, "$pncValue%") })
+                                 { customHintTextWithScore(settings.hintTextSimpleComplex, "$pncValue%") },
+                                 { customHintTextWithScore(settings.hintTextMildlyComplex, "$pncValue%") },
+                                 { customHintTextWithScore(settings.hintTextVeryComplex, "$pncValue%") })
         }
     }
 
@@ -80,6 +69,18 @@ object ComplexitySettings {
             complexity < limitVeryComplexMoreThan * if (isClassComplexity) 4 else 1 -> middleFun.invoke(complexity)
             else -> hardFun.invoke(complexity)
         }
+
+    /**
+     * Because custom hint text is supported now (with score values templates in the text), we need to
+     * replace the wildcard for the score with the actual value.
+     */
+    private fun customHintTextWithScore(template: String, score: String): String {
+        return if (template.isEmpty()) {
+            template
+        } else {
+            template.replace("{score}", score)
+        }
+    }
 }
 
 private fun String.parseColor() = Color(this.drop(1).toInt(16), false)

@@ -19,10 +19,9 @@ class SettingsConfigurable(val project: Project) : Configurable {
             state.showIcon != component?.getShowIcon() ||
             state.limitSimpleLessThan != component?.getSimpleLimit() ||
             state.limitVeryComplexMoreThan != component?.getVeryComplexLimit() ||
-            state.simpleComplexText != component?.getSimpleComplexText() ||
-            state.mildlyComplexText != component?.getMildlyComplexText() ||
-            state.veryComplexText != component?.getVeryComplexText() ||
-            state.templateText != component?.getTemplateText()
+            state.hintTextSimpleComplex != component?.getSimpleComplexText() ||
+            state.hintTextMildlyComplex != component?.getMildlyComplexText() ||
+            state.hintTextVeryComplex != component?.getVeryComplexText()
     }
 
     override fun apply() {
@@ -33,10 +32,9 @@ class SettingsConfigurable(val project: Project) : Configurable {
             showIcon = component!!.getShowIcon()
             limitSimpleLessThan = component!!.getSimpleLimit()
             limitVeryComplexMoreThan = component!!.getVeryComplexLimit()
-            simpleComplexText = component!!.getSimpleComplexText()
-            mildlyComplexText = component!!.getMildlyComplexText()
-            veryComplexText = component!!.getVeryComplexText()
-            templateText = component!!.getTemplateText()
+            hintTextSimpleComplex = component!!.getSimpleComplexText()
+            hintTextMildlyComplex = component!!.getMildlyComplexText()
+            hintTextVeryComplex = component!!.getVeryComplexText()
         }
     }
 
@@ -48,10 +46,9 @@ class SettingsConfigurable(val project: Project) : Configurable {
             it.setUseDefaults(settings.useDefaults)
             it.setShowPlainComplexity(settings.usePlainComplexity)
             it.setShowIcon(settings.showIcon)
-            it.setSimpleComplexText(settings.simpleComplexText)
-            it.setMildlyComplexText(settings.mildlyComplexText)
-            it.setVeryComplexText(settings.veryComplexText)
-            it.setTemplateText(settings.templateText)
+            it.setSimpleComplexText(settings.hintTextSimpleComplex)
+            it.setMildlyComplexText(settings.hintTextMildlyComplex)
+            it.setVeryComplexText(settings.hintTextVeryComplex)
         }
     }
 

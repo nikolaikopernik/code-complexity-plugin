@@ -1,6 +1,5 @@
 package com.github.nikolaikopernik.codecomplexity.settings
 
-import com.github.nikolaikopernik.codecomplexity.bundle.SettingsBundle
 import com.intellij.ide.HelpTooltip
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.ui.components.JBCheckBox
@@ -27,31 +26,31 @@ class SettingsComponent {
     private val showIcon = JBCheckBox(SettingsBundle.message("showIcon"))
     private val simpleLimit = IntegerField(null, 1, 100)
     private val veryComplexLimit = IntegerField(null, 2, 100)
-    private val customSimpleField = JBTextField(SettingsBundle.message("simpleComplexDefaultText"))
-    private val customMildlyComplexField = JBTextField(SettingsBundle.message("mildlyComplexDefaultText"))
-    private val customVeryComplexField = JBTextField(SettingsBundle.message("veryComplexDefaultText"))
-    private val customTemplateField = JBTextField(SettingsBundle.message("customTemplateDefaultText", "{0}", "{1}"))
+    private val customHintTextSimpleField = JBTextField(SettingsBundle.message("simpleComplexDefaultText"))
+    private val customHintTextMildlyComplexField = JBTextField(SettingsBundle.message("mildlyComplexDefaultText"))
+    private val customHintTextVeryComplexField = JBTextField(SettingsBundle.message("veryComplexDefaultText"))
 
     init {
-        HelpTooltip().setDescription(SettingsBundle.message("customTemplateToolTip", "{0}", "{1}"))
-            .installOn(customTemplateField)
+        HelpTooltip().setDescription(SettingsBundle.message("customComplexDefaultTextToolTip")).installOn(customHintTextSimpleField)
+        HelpTooltip().setDescription(SettingsBundle.message("customComplexDefaultTextToolTip")).installOn(customHintTextMildlyComplexField)
+        HelpTooltip().setDescription(SettingsBundle.message("customComplexDefaultTextToolTip")).installOn(customHintTextVeryComplexField)
         val limits = JPanel(BorderLayout())
         limits.border = IdeBorderFactory.createTitledBorder(SettingsBundle.message("limitsLabel"))
         limits.add(useDefaults, BorderLayout.NORTH)
         limits.add(LabelledComponent(SettingsBundle.message("simpleComplexScoreLimit"), simpleLimit), BorderLayout.CENTER)
         limits.add(LabelledComponent(SettingsBundle.message("veryComplexScoreLimit"), veryComplexLimit), BorderLayout.SOUTH)
-        val customText = JPanel()
-        customText.layout = BoxLayout(customText, BoxLayout.Y_AXIS)
-        customText.border = IdeBorderFactory.createTitledBorder(SettingsBundle.message("customDescriptionText"))
-        customText.add(LabelledComponent(SettingsBundle.message("customSimpleComplexLabel"), customSimpleField))
-        customText.add(LabelledComponent(SettingsBundle.message("customMildlyComplexLabel"), customMildlyComplexField))
-        customText.add(LabelledComponent(SettingsBundle.message("customVeryComplexLabel"), customVeryComplexField))
-        customText.add(LabelledComponent(SettingsBundle.message("customTemplateLabel"), customTemplateField))
+        val customTextPanel = JPanel()
+        customTextPanel.layout = BoxLayout(customTextPanel, BoxLayout.Y_AXIS)
+        customTextPanel.border = IdeBorderFactory.createTitledBorder(SettingsBundle.message("customDescriptionText"))
+        customTextPanel.add(LabelledComponent(SettingsBundle.message("customSimpleComplexLabel"), customHintTextSimpleField))
+        customTextPanel.add(LabelledComponent(SettingsBundle.message("customMildlyComplexLabel"), customHintTextMildlyComplexField))
+        customTextPanel.add(LabelledComponent(SettingsBundle.message("customVeryComplexLabel"), customHintTextVeryComplexField))
+
         panel = FormBuilder.createFormBuilder()
             .addComponent(explanationText)
             .addComponent(JPanel())
             .addComponent(limits)
-            .addComponent(customText)
+            .addComponent(customTextPanel)
             .addComponent(showOriginalScore)
             .addComponent(showIcon)
             .addComponentFillVertically(JPanel(), 0)
@@ -93,19 +92,15 @@ class SettingsComponent {
     }
 
     fun setSimpleComplexText(text: String) {
-        this.customSimpleField.text = text
+        this.customHintTextSimpleField.text = text
     }
 
     fun setMildlyComplexText(text: String) {
-        this.customMildlyComplexField.text = text
+        this.customHintTextMildlyComplexField.text = text
     }
 
     fun setVeryComplexText(text: String) {
-        this.customVeryComplexField.text = text
-    }
-
-    fun setTemplateText(text: String) {
-        this.customTemplateField.text = text
+        this.customHintTextVeryComplexField.text = text
     }
 
     fun getUseDefaults(): Boolean = useDefaults.selected.invoke()
@@ -118,11 +113,9 @@ class SettingsComponent {
 
     fun getVeryComplexLimit(): Int = veryComplexLimit.value
 
-    fun getSimpleComplexText(): String = customSimpleField.text
+    fun getSimpleComplexText(): String = customHintTextSimpleField.text
 
-    fun getMildlyComplexText(): String = customMildlyComplexField.text
+    fun getMildlyComplexText(): String = customHintTextMildlyComplexField.text
 
-    fun getVeryComplexText(): String = customVeryComplexField.text
-
-    fun getTemplateText(): String = customTemplateField.text
+    fun getVeryComplexText(): String = customHintTextVeryComplexField.text
 }
