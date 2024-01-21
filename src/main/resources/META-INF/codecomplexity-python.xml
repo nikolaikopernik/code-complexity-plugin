@@ -1,6 +1,6 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.github.nikolaikopernik.codecomplexity">
-        <languageInfoProvider id="PythonLanguageInfoProvider"
-                              implementation="com.github.nikolaikopernik.codecomplexity.python.PythonLanguageInfoProvider"/>
+        <languageInfoProvider id="PythonComplexityInfoProvider"
+                              implementation="com.github.nikolaikopernik.codecomplexity.python.PythonComplexityInfoProvider"/>
     </extensions>
 </idea-plugin>

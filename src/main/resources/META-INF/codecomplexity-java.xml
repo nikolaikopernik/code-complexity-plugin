@@ -1,6 +1,6 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.github.nikolaikopernik.codecomplexity">
-        <languageInfoProvider id="JavaLanguageInfoProvider"
-                              implementation="com.github.nikolaikopernik.codecomplexity.java.JavaLanguageInfoProvider"/>
+        <languageInfoProvider id="JavaComplexityInfoProvider"
+                              implementation="com.github.nikolaikopernik.codecomplexity.java.JavaComplexityInfoProvider"/>
     </extensions>
 </idea-plugin>

@@ -2,7 +2,7 @@ package com.github.nikolaikopernik.codecomplexity
 
 import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
 import com.github.nikolaikopernik.codecomplexity.core.ElementVisitor
-import com.github.nikolaikopernik.codecomplexity.kotlin.KtLanguageInfoProvider
+import com.github.nikolaikopernik.codecomplexity.kotlin.KtComplexityInfoProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.childrenOfType
@@ -20,7 +20,7 @@ class KotlinComplexityCalculationTest : BaseComplexityTest() {
     override fun getTestDataPath() = KOTLIN_TEST_FILES_PATH
 
     override fun createLanguageElementVisitor(sink: ComplexitySink): ElementVisitor =
-        KtLanguageInfoProvider().getVisitor(sink)
+        KtComplexityInfoProvider().getVisitor(sink)
 
     override fun parseTestFile(file: PsiFile): List<Triple<PsiElement, String, Int>> {
         val methods = requireNotNull(file.childrenOfType<KtNamedFunction>())
