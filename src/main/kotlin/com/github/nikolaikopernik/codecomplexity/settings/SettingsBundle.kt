@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
 
 @NonNls
-private const val BUNDLE = "messages.SettingsBundle"
+private const val BUNDLE = "messages.ComplexityBundle"
 
 object SettingsBundle : DynamicBundle(BUNDLE) {
 

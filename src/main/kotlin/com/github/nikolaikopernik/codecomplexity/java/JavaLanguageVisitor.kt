@@ -131,7 +131,7 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
 
 private fun PsiMethodCallExpression.isRecursion(): Boolean {
     val parentMethod: PsiMethod = this.findCurrentMethod() ?: return false
-    if (this.methodExpression.text != parentMethod.nameIdentifier!!.text) return false
+    if (this.methodExpression.text != parentMethod.nameIdentifier?.text) return false
     if (this.argumentList.expressionCount != parentMethod.parameterList.parametersCount) return false
     return true
 }

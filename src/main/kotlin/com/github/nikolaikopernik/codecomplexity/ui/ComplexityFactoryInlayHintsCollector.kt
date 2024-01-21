@@ -1,9 +1,9 @@
 package com.github.nikolaikopernik.codecomplexity.ui
 
+import com.github.nikolaikopernik.codecomplexity.core.ComplexityInfoProvider
 import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
-import com.github.nikolaikopernik.codecomplexity.core.LanguageInfoProvider
-import com.github.nikolaikopernik.codecomplexity.core.PLUGIN_EP_NAME
 import com.github.nikolaikopernik.codecomplexity.core.PointType
+import com.github.nikolaikopernik.codecomplexity.core.findProviderForElement
 import com.github.nikolaikopernik.codecomplexity.settings.SettingsState
 import com.github.nikolaikopernik.codecomplexity.settings.getConfiguredIcon
 import com.github.nikolaikopernik.codecomplexity.settings.getConfiguredText
@@ -21,7 +21,7 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 
 @Suppress("UnstableApiUsage")
-class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: LanguageInfoProvider,
+class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: ComplexityInfoProvider,
                                            private val editor: Editor) : FactoryInlayHintsCollector(editor) {
     private val setting: SettingsState = SettingsState.INSTANCE
 
@@ -29,7 +29,7 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
         return ComplexitySink().also { sink ->
             element.accept(object : PsiRecursiveElementVisitor() {
                 override fun visitElement(element: PsiElement) {
-                    if (languageInfoProvider.isClassMember(element)) {
+                    if (complexityInfoProvider.isComplexitySuitableMember(element)) {
                         sink.increaseComplexity(element.obtainElementComplexity().getComplexity(), PointType.METHOD)
                     } else {
                         super.visitElement(element)
@@ -44,9 +44,9 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
      * This method makes the class to work as a visitor.
      */
     override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
-        val complexityScore = if (languageInfoProvider.isClassWithBody(element)) {
+        val complexityScore = if (complexityInfoProvider.isClassWithBody(element)) {
             getClassComplexity(element)
-        } else if (languageInfoProvider.isClassMember(element)) {
+        } else if (complexityInfoProvider.isComplexitySuitableMember(element)) {
             element.obtainElementComplexity()
         } else null
 
@@ -112,20 +112,13 @@ class ComplexityFactoryInlayHintsCollector(private val languageInfoProvider: Lan
  * Cached version of complexity.
  * Use this one as it speeds up the calculations.
  */
-fun PsiElement.obtainElementComplexity(): ComplexitySink {
+fun PsiElement.obtainElementComplexity(givenProvider: ComplexityInfoProvider? = null): ComplexitySink {
     return CachedValuesManager.getCachedValue(this) {
         // Search for the first provider with the same language on every recompute,
         // so there is no dependency on the reference to that provider.
-            val provider = this.findProviderForElement()
-            val sink = ComplexitySink()
-            this.accept(provider.getVisitor(sink))
-            CachedValueProvider.Result.create(sink, this)
+        val provider = givenProvider ?: this.findProviderForElement()
+        val sink = ComplexitySink()
+        this.accept(provider.getVisitor(sink))
+        CachedValueProvider.Result.create(sink, this)
     }
-}
-
-private fun PsiElement.findProviderForElement(): LanguageInfoProvider {
-    val language = this.language
-    val provider = PLUGIN_EP_NAME.findFirstSafe { it.language == language }
-    checkNotNull(provider) { "Failed to obtain LanguageInfoProvider for language with id: ${language.id}" }
-    return provider
 }

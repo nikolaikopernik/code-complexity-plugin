@@ -1,7 +1,8 @@
 package com.github.nikolaikopernik.codecomplexity.ui
 
-import com.github.nikolaikopernik.codecomplexity.core.LanguageInfoProvider
+import com.github.nikolaikopernik.codecomplexity.core.ComplexityInfoProvider
 import com.github.nikolaikopernik.codecomplexity.core.PLUGIN_HINT_KEY
+import com.github.nikolaikopernik.codecomplexity.core.isSupportedByComplexityPlugin
 import com.intellij.codeInsight.hints.ChangeListener
 import com.intellij.codeInsight.hints.ImmediateConfigurable
 import com.intellij.codeInsight.hints.InlayHintsCollector
@@ -14,15 +15,13 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiFile
 import javax.swing.JPanel
 
-val SUPPORTED_LANGUAGES = setOf("java", "kotlin", "python")
-
 @Suppress("UnstableApiUsage")
-class ComplexityInlayHintsProvider(private val languageInfoProvider: LanguageInfoProvider) : InlayHintsProvider<NoSettings> {
+class ComplexityInlayHintsProvider(private val complexityInfoProvider: ComplexityInfoProvider) : InlayHintsProvider<NoSettings> {
     override fun getCollectorFor(file: PsiFile,
                                  editor: Editor,
                                  settings: NoSettings,
                                  sink: InlayHintsSink): InlayHintsCollector {
-        return ComplexityFactoryInlayHintsCollector(languageInfoProvider, editor)
+        return ComplexityFactoryInlayHintsCollector(complexityInfoProvider, editor)
     }
 
     override fun createSettings() = NoSettings()
@@ -36,9 +35,8 @@ class ComplexityInlayHintsProvider(private val languageInfoProvider: LanguageInf
     override val isVisibleInSettings: Boolean = false
 
     override fun isLanguageSupported(language: Language): Boolean {
-        return language.id.lowercase() in SUPPORTED_LANGUAGES
+        return language.isSupportedByComplexityPlugin()
     }
-
     override fun createConfigurable(settings: NoSettings): ImmediateConfigurable {
         return object : ImmediateConfigurable {
             override fun createComponent(listener: ChangeListener) = JPanel()
