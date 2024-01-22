@@ -18,7 +18,7 @@ import com.intellij.psi.PsiFile
  * @see ComplexityInfoProvider
  * @see visitFileFast
  */
-class KtHighComplexityInspection : LocalInspectionTool() {
+class HighCodeComplexityInspection : LocalInspectionTool() {
 
     /**
      * Check file fast in 2 steps:
