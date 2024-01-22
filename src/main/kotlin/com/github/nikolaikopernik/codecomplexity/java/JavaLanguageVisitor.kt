@@ -129,6 +129,10 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     }
 }
 
+/**
+ * Checking if recursion is used.
+ * Same problems as in [KtLanguageVisitor]
+ */
 private fun PsiMethodCallExpression.isRecursion(): Boolean {
     val parentMethod: PsiMethod = this.findCurrentMethod() ?: return false
     if (this.methodExpression.text != parentMethod.nameIdentifier?.text) return false

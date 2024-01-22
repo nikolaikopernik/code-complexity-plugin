@@ -6,20 +6,43 @@ import com.github.nikolaikopernik.codecomplexity.core.PointType
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
-import org.jetbrains.kotlin.idea.inspections.RecursivePropertyAccessorInspection
-import org.jetbrains.kotlin.idea.util.getReceiverTargetDescriptor
 import org.jetbrains.kotlin.lexer.KtToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.KtArrayAccessExpression
+import org.jetbrains.kotlin.psi.KtBinaryExpression
+import org.jetbrains.kotlin.psi.KtBlockExpression
+import org.jetbrains.kotlin.psi.KtBreakExpression
+import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.kotlin.psi.KtCatchClause
+import org.jetbrains.kotlin.psi.KtClassBody
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtContainerNodeForControlStructureBody
+import org.jetbrains.kotlin.psi.KtContinueExpression
+import org.jetbrains.kotlin.psi.KtDoWhileExpression
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtExpression
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtForExpression
+import org.jetbrains.kotlin.psi.KtFunctionLiteral
+import org.jetbrains.kotlin.psi.KtIfExpression
+import org.jetbrains.kotlin.psi.KtLambdaExpression
+import org.jetbrains.kotlin.psi.KtNameReferenceExpression
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtOperationExpression
+import org.jetbrains.kotlin.psi.KtOperationReferenceExpression
+import org.jetbrains.kotlin.psi.KtParenthesizedExpression
+import org.jetbrains.kotlin.psi.KtPrefixExpression
+import org.jetbrains.kotlin.psi.KtScript
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression
+import org.jetbrains.kotlin.psi.KtStatementExpression
+import org.jetbrains.kotlin.psi.KtThisExpression
+import org.jetbrains.kotlin.psi.KtValueArgumentList
+import org.jetbrains.kotlin.psi.KtWhenExpression
+import org.jetbrains.kotlin.psi.KtWhileExpression
 import org.jetbrains.kotlin.psi.psiUtil.parents
-import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.inline.InlineUtil
-import org.jetbrains.kotlin.resolve.scopes.receivers.Receiver
-import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.types.expressions.OperatorConventions
 import org.jetbrains.kotlin.util.OperatorNameConventions
 
@@ -48,7 +71,7 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
                 }
             }
 
-            is KtElement -> if (isRecursiveCall(element)) sink.increaseComplexity(PointType.RECURSION)
+            is KtNameReferenceExpression -> if (isRecursiveCall(element)) sink.increaseComplexity(PointType.RECURSION)
         }
     }
 
@@ -123,43 +146,26 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
         return KtTokens.QUEST
     }
 
-    private fun isRecursiveCall(element: KtElement): Boolean {
-        if (RecursivePropertyAccessorInspection.isRecursivePropertyAccess(element, false)) return true
-        if (RecursivePropertyAccessorInspection.isRecursiveSyntheticPropertyAccess(element)) return true
-        // Fast check for names without resolve
-        val resolveName = getCallNameFromPsi(element) ?: return false
-        val enclosingFunction = getEnclosingFunction(element, false) ?: return false
-
-        val enclosingFunctionName = enclosingFunction.name
-        if (enclosingFunctionName != OperatorNameConventions.INVOKE.asString()
-            && enclosingFunctionName != resolveName.asString()
-        ) return false
-
-        // Check that there were no not-inlined lambdas on the way to enclosing function
-        if (enclosingFunction != getEnclosingFunction(element, true)) return false
-
-        val bindingContext = element.analyze()
-        val enclosingFunctionDescriptor =
-            bindingContext[BindingContext.FUNCTION, enclosingFunction] ?: return false
-
-        val call = bindingContext[BindingContext.CALL, element] ?: return false
-        val resolvedCall = bindingContext[BindingContext.RESOLVED_CALL, call] ?: return false
-
-        if (resolvedCall.candidateDescriptor.original != enclosingFunctionDescriptor) return false
-
-        fun isDifferentReceiver(receiver: Receiver?): Boolean {
-            if (receiver !is ReceiverValue) return false
-
-            val receiverOwner = receiver.getReceiverTargetDescriptor(bindingContext) ?: return true
-
-            return when (receiverOwner) {
-                is SimpleFunctionDescriptor -> receiverOwner != enclosingFunctionDescriptor
-                is ClassDescriptor -> receiverOwner != enclosingFunctionDescriptor.containingDeclaration
-                else -> return true
-            }
+    /**
+     * Checking if recursion is used.
+     * Have to do it fast and dirty as it should be fast to avoid exception in IDEA.
+     * Basically we check:
+     *  - if the found reference expression name matches the direct parent method name. This code won't detect recursion
+     *    if more than one method involved (method A calling B and then B calling A)
+     *  - if the number of arguments matches the number of parameters
+     *
+     *  Possible improvements:
+     *   - check parameter types as well
+     */
+    private fun isRecursiveCall(element: KtNameReferenceExpression): Boolean {
+        val argumentList = element.nextSibling
+        if (argumentList is KtValueArgumentList){
+            val parentMethod: KtNamedFunction = element.findCurrentMethod() ?: return false
+            if (element.getReferencedName() != parentMethod.nameIdentifier?.text) return false
+            if (argumentList.arguments.size != parentMethod.valueParameterList?.parameters?.size) return false
+            return true
         }
-
-        return !isDifferentReceiver(resolvedCall.dispatchReceiver)
+        return false
     }
 
     private fun getEnclosingFunction(element: NavigatablePsiElement,
@@ -227,3 +233,9 @@ private fun KtToken.toPointType(): PointType =
         KtTokens.OROR -> PointType.LOGICAL_OR
         else -> PointType.UNKNOWN
     }
+
+private fun PsiElement.findCurrentMethod(): KtNamedFunction? {
+    var element: PsiElement? = this
+    while (element != null && element !is KtNamedFunction) element = element.parent
+    return element?.let { it as KtNamedFunction }
+}
