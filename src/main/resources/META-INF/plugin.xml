@@ -33,7 +33,7 @@
                          hasStaticDescription="true"
                          enabledByDefault="false"
                          level="WARNING"
-                         implementationClass="com.github.nikolaikopernik.codecomplexity.core.KtHighComplexityInspection"/>
+                         implementationClass="com.github.nikolaikopernik.codecomplexity.core.HighCodeComplexityInspection"/>
     </extensions>
 
 </idea-plugin>
