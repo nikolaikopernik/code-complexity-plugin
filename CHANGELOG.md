@@ -2,6 +2,10 @@
 
 # Code Complexity Changelog
 
+## [1.5.0]
+- An inspection 'High code complexity' is added.
+  Now you can run complexity check for the entire project.
+
 ## [1.4.0]
 - Hint text in editor is now configurable.
 - Added Chinese translation
