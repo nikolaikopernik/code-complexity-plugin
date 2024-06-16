@@ -2,6 +2,9 @@
 
 # Code Complexity Changelog
 
+## [1.5.1]
+- Support for IDEA 2024.2.EAP
+
 ## [1.5.0]
 - An inspection 'High code complexity' is added.
   Now you can run complexity check for the entire project.
