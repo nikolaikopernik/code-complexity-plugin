@@ -2,6 +2,9 @@
 
 # Code Complexity Changelog
 
+## [1.5.2]
+- Fixed issue #18. Now complexity hints are visible only in the MAIN editor.
+
 ## [1.5.1]
 - Support for IDEA 2024.2.EAP
 
