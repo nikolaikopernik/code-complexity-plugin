@@ -8,7 +8,7 @@ import com.intellij.testFramework.LightPlatformCodeInsightTestCase
 import java.io.File
 
 abstract class BaseComplexityTest : LightPlatformCodeInsightTestCase() {
-    fun testAllFiles(path: String, extension: String = ".java") {
+    fun checkAllFilesInFolder(path: String, extension: String = ".java") {
         val tests = File(path).listFiles()
             .filter { it.name.endsWith(extension) }
 
@@ -30,7 +30,8 @@ abstract class BaseComplexityTest : LightPlatformCodeInsightTestCase() {
             print("Checking method '$name()' in file ${this.drop(1)} file... ")
             val sink = ComplexitySink().apply { element.accept(createLanguageElementVisitor(this)) }
             assertEquals("Incorrect complexity calculated for method '$name()' in the file ${this.drop(1)}.\n" +
-                             "The following points have been seen by the sink: \n" + sink.getPoints().joinToString { it.toString() + '\n' },
+                             "The following points have been seen by the sink: \n" + sink.getPoints()
+                .joinToString { it.toString() + '\n' },
                          complexity,
                          sink.getComplexity()
             )
