@@ -14,7 +14,7 @@ private const val PYTHON_TEST_FILES_PATH = "src/test/testData/python"
 class PythonComplexityCalculationTest : BaseComplexityTest() {
     @Test
     fun testPythonFiles() {
-        testAllFiles(PYTHON_TEST_FILES_PATH, ".py")
+        checkAllFilesInFolder(PYTHON_TEST_FILES_PATH, ".py")
     }
 
     override fun getTestDataPath() = PYTHON_TEST_FILES_PATH

@@ -16,7 +16,7 @@ private const val JAVA_TEST_FILES_PATH = "src/test/testData/java"
 class JavaComplexityCalculationTest : BaseComplexityTest() {
     @Test
     fun testJavaFiles() {
-        testAllFiles(JAVA_TEST_FILES_PATH, ".java")
+        checkAllFilesInFolder(JAVA_TEST_FILES_PATH, ".java")
     }
 
     override fun getTestDataPath() = JAVA_TEST_FILES_PATH

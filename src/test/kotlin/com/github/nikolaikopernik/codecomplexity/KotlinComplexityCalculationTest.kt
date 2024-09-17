@@ -14,7 +14,7 @@ private const val KOTLIN_TEST_FILES_PATH = "src/test/testData/kotlin"
 class KotlinComplexityCalculationTest : BaseComplexityTest() {
     @Test
     fun testKotlinFiles() {
-        testAllFiles(KOTLIN_TEST_FILES_PATH, ".kt")
+        checkAllFilesInFolder(KOTLIN_TEST_FILES_PATH, ".kt")
     }
 
     override fun getTestDataPath() = KOTLIN_TEST_FILES_PATH
