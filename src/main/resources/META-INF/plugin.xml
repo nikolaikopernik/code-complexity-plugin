@@ -4,6 +4,8 @@
     <name>Code Complexity</name>
     <vendor email="nikolaikopernik@gmail.com">Nikolai Bogdanov</vendor>
 
+    <idea-version since-build="211.*" until-build="243.*" />
+
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="codecomplexity-java.xml">com.intellij.java</depends>
     <depends optional="true" config-file="codecomplexity-kotlin.xml">org.jetbrains.kotlin</depends>
