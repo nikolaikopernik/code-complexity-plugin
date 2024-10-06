@@ -2,6 +2,10 @@
 
 # Code Complexity Changelog
 
+## [1.6.0]
+- Upgraded to Intellij Gradle plugin 2.0.1
+- Support for K2 mode
+
 ## [1.5.2]
 - Fixed issue #18. Now complexity hints are visible only in the MAIN editor.
 

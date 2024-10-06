@@ -34,6 +34,10 @@
                          enabledByDefault="false"
                          level="WARNING"
                          implementationClass="com.github.nikolaikopernik.codecomplexity.core.HighCodeComplexityInspection"/>
+
+        <supportsKotlinPluginMode supportsK2="true" />
     </extensions>
+
+
 
 </idea-plugin>
