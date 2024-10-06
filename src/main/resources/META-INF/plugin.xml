@@ -34,7 +34,9 @@
                          enabledByDefault="false"
                          level="WARNING"
                          implementationClass="com.github.nikolaikopernik.codecomplexity.core.HighCodeComplexityInspection"/>
+    </extensions>
 
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <supportsKotlinPluginMode supportsK2="true" />
     </extensions>
 
