@@ -11,7 +11,6 @@ import com.intellij.codeInsight.hints.InlayHintsSink
 import com.intellij.codeInsight.hints.NoSettings
 import com.intellij.codeInsight.hints.SettingsKey
 import com.intellij.lang.Language
-import com.intellij.openapi.diagnostic.LoggerRt
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorKind
 import com.intellij.psi.PsiFile
@@ -19,8 +18,6 @@ import javax.swing.JPanel
 
 @Suppress("UnstableApiUsage")
 class ComplexityInlayHintsProvider(private val complexityInfoProvider: ComplexityInfoProvider) : InlayHintsProvider<NoSettings> {
-
-    private val logger = LoggerRt.getInstance(ComplexityInlayHintsProvider::class.java)
 
     override fun getCollectorFor(file: PsiFile,
                                  editor: Editor,
