@@ -2,6 +2,7 @@ package com.github.nikolaikopernik.codecomplexity.core
 
 import com.github.nikolaikopernik.codecomplexity.settings.ComplexityLevel
 import com.github.nikolaikopernik.codecomplexity.settings.getConfiguredLevel
+import com.github.nikolaikopernik.codecomplexity.settings.getValueToShow
 import com.intellij.codeInspection.InspectionManager
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemDescriptor
@@ -37,7 +38,7 @@ class HighCodeComplexityInspection : LocalInspectionTool() {
                     val namedElement = provider.getNameElementFor(element)
                     val problemRef = "'${namedElement.text}()'"
                     problems.add(manager.createProblemDescriptor(namedElement,
-                                                                 "fun $problemRef is very complex",
+                                                                 "fun $problemRef has complexity: ${complexitySink.getValueToShow()}",
                                                                  isOnTheFly,
                                                                  emptyArray(),
                                                                  ProblemHighlightType.GENERIC_ERROR_OR_WARNING))

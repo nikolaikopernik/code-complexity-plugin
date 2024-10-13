@@ -2,6 +2,13 @@
 
 # Code Complexity Changelog
 
+## [Unreleased]
+
+## [1.6.1]
+- Fixes issue #24
+- Small refactoring of inlay ui components
+- Complexity score is now visible in the inspection results
+
 ## [1.6.0]
 - Upgraded to Intellij Gradle plugin 2.0.1
 - Support for K2 mode
@@ -46,3 +53,19 @@
 ## [0.0.1]
 - Initial implementation for Java and Kotlin.
 - Publishing of the plugin,
+
+[Unreleased]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.6.0...v1.6.1
+[1.6.0]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.5.2...v1.6.0
+[1.5.2]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.5.1...v1.5.2
+[1.5.1]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.5.0...v1.5.1
+[1.5.0]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.4.0...v1.5.0
+[1.4.0]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.2.1...v1.3.0
+[1.2.1]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v0.0.2...v1.0.0
+[0.0.2]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v0.0.1...v0.0.2
+[0.0.1]: https://github.com/nikolaikopernik/code-complexity-plugin/commits/v0.0.1
