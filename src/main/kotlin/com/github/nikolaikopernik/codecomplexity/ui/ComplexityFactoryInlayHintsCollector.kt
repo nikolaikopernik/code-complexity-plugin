@@ -10,10 +10,8 @@ import com.github.nikolaikopernik.codecomplexity.settings.getConfiguredText
 import com.intellij.codeInsight.hints.FactoryInlayHintsCollector
 import com.intellij.codeInsight.hints.InlayHintsSink
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
-import com.intellij.codeInsight.hints.presentation.InlayTextMetricsStorage
-import com.intellij.codeInsight.hints.presentation.InsetPresentation
-import com.intellij.codeInsight.hints.presentation.ScaledIconPresentation
-import com.intellij.codeInsight.hints.presentation.SequencePresentation
+import com.intellij.codeInsight.hints.presentation.WithAttributesPresentation
+import com.intellij.openapi.editor.DefaultLanguageHighlighterColors.INLAY_TEXT_WITHOUT_BACKGROUND
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiRecursiveElementVisitor
@@ -68,33 +66,35 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
         }
     }
 
-    private fun InlayPresentation.shiftTo(offset: Int, editor: Editor): InlayPresentation {
-        val document = editor.document
-        val column = offset - document.getLineStartOffset(document.getLineNumber(offset))
-
-        return factory.seq(factory.textSpacePlaceholder(column, true), this)
+    private fun getPresentation(element: PsiElement, complexityScore: ComplexitySink): InlayPresentation {
+        val text = factory.inset(factory.offsetFromTopForSmallText(getTextPresentation(complexityScore, editor)))
+        if (setting.showIcon) {
+            return factory.seq(
+                factory.offsetFromTopForSmallText(
+                    factory.scaledIcon(
+                        complexityScore.getConfiguredIcon(),
+                        1.0f)),
+                text)
+        }
+        return text
     }
 
-    private fun getPresentation(element: PsiElement, complexityScore: ComplexitySink): InlayPresentation {
-        val insetPresentations = mutableListOf<InsetPresentation>()
-        if (setting.showIcon) {
-            insetPresentations.add(
-                InsetPresentation(
-                    ScaledIconPresentation(
-                        InlayTextMetricsStorage(editor),
-                        true,
-                        complexityScore.getConfiguredIcon(),
-                        editor.component),
-                    top = 6),
-            )
-        }
-        insetPresentations.add(InsetPresentation(getTextPresentation(complexityScore, editor), top = 2))
-        return InsetPresentation(SequencePresentation(insetPresentations))
+    /**
+     * For some reason INLAY_DEFAULT (which is used in [com.intellij.codeInsight.hints.InlayPresentationFactory.smallText])
+     * doesn't work nicely in HighContrast theme.
+     */
+    private fun correctTextColour(base: InlayPresentation): InlayPresentation {
+        return WithAttributesPresentation(base,
+                                          INLAY_TEXT_WITHOUT_BACKGROUND,
+                                          editor,
+                                          WithAttributesPresentation.AttributesFlags().withIsDefault(true))
     }
 
     private fun getTextPresentation(complexity: ComplexitySink, editor: Editor): InlayPresentation =
-        InsetPresentation(factory.text(complexity.getConfiguredText()),
-                          top = 4, down = 4, left = 6, right = 6)
+        correctTextColour(
+            factory.inset(
+                factory.smallText(complexity.getConfiguredText()),
+                left = 2, right = 2))
 
     override fun equals(other: Any?): Boolean {
         if (other is ComplexityFactoryInlayHintsCollector) {
