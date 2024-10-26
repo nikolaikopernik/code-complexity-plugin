@@ -39,6 +39,7 @@ dependencies {
         bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.kotlin")
         plugin("PythonCore", "243.18137.10")
+        plugin("JavaScript", "243.18137.10")
 
         instrumentationTools()
         pluginVerifier()
