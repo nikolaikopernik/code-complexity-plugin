@@ -11,7 +11,8 @@ import com.intellij.psi.PsiElement
 val PLUGIN_EP_NAME: ExtensionPointName<ComplexityInfoProvider> = ExtensionPointName("com.github.nikolaikopernik.codecomplexity.languageInfoProvider")
 val PLUGIN_HINT_KEY = SettingsKey<NoSettings>("code.complexity.hint")
 
-val SUPPORTED_LANGUAGES = setOf("java", "kotlin", "python")
+// TODO: How to handle language with dialects?
+val SUPPORTED_LANGUAGES = setOf("java", "kotlin", "python", "javascript", "typescript", "typescript jsx", "ecmascript 6", "ecma script level 4", "flow js")
 
 /**
  * Main interface to calculate complexity for different languages.
