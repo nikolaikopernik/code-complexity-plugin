@@ -15,7 +15,7 @@ version = providers.gradleProperty("pluginVersion").get()
 
 // Set the JVM language level used to build the project.
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 
@@ -34,11 +34,11 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     intellijPlatform {
-        intellijIdeaCommunity("243.18137.10")
+        intellijIdeaCommunity("2024.3.4")
 
         bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.kotlin")
-        plugin("PythonCore", "243.18137.10")
+        plugin("PythonCore", "243.23654.153")
 
         instrumentationTools()
         pluginVerifier()
