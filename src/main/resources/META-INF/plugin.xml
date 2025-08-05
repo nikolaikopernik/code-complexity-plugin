@@ -8,6 +8,7 @@
     <depends optional="true" config-file="codecomplexity-java.xml">com.intellij.java</depends>
     <depends optional="true" config-file="codecomplexity-kotlin.xml">org.jetbrains.kotlin</depends>
     <depends optional="true" config-file="codecomplexity-python.xml">com.intellij.modules.python</depends>
+    <depends optional="true" config-file="codecomplexity-go.xml">org.jetbrains.plugins.go</depends>
 
     <extensionPoints>
         <extensionPoint name="languageInfoProvider"
