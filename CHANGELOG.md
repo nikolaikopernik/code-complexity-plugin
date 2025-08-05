@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+## [1.6.3]
+- Support for IDEA 2025.2.*
+
 ## [1.6.2]
 - Support for IDEA 2025.*
 
@@ -57,7 +60,8 @@
 - Initial implementation for Java and Kotlin.
 - Publishing of the plugin,
 
-[Unreleased]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.6.2...HEAD
+[Unreleased]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.6.3...HEAD
+[1.6.3]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/nikolaikopernik/code-complexity-plugin/compare/v1.5.2...v1.6.0

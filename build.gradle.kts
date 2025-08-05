@@ -4,8 +4,8 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
     id("java") // Java support
-    id("org.jetbrains.intellij.platform") version "2.0.1" // Gradle IntelliJ Plugin
-    alias(libs.plugins.kotlin) version "2.0.0" // Kotlin support
+    id("org.jetbrains.intellij.platform") version "2.7.0" // Gradle IntelliJ Plugin
+    alias(libs.plugins.kotlin) version "2.2.0" // Kotlin support
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
 }
 
@@ -34,11 +34,11 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     intellijPlatform {
-        intellijIdeaCommunity("2024.3.4")
+        intellijIdeaCommunity("2025.1.4.1")
 
         bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.kotlin")
-        plugin("PythonCore", "243.23654.153")
+        plugin("PythonCore", "252.23892.409")
 
         instrumentationTools()
         pluginVerifier()
