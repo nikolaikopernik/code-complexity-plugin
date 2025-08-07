@@ -68,9 +68,10 @@ import com.intellij.psi.impl.PsiTreeChangePreprocessor
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
+import com.intellij.psi.stubs.StubElementTypeHolderEP
 import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.stubs.StubIndexKey
-import com.intellij.psi.tree.StubFileElementType
+import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.util.childrenOfType
 import com.intellij.psi.util.descendants
 import com.intellij.testFramework.DisposableRule
@@ -79,7 +80,6 @@ import com.intellij.testFramework.unregisterService
 import com.intellij.util.Processor
 import com.intellij.util.indexing.IdFilter
 import org.jdom.Element
-import org.jetbrains.annotations.NonNls
 import org.junit.Rule
 import org.junit.Test
 
@@ -113,7 +113,7 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
         application.runWriteAction {
             application.registerServiceInstance(GoElementTypeFactorySupplier::class.java, GoElementTypeFactorySupplierImpl())
             application.service<FileTypeManager>()?.associate(GoFileType.INSTANCE, ExtensionFileNameMatcher("go"))
-        }
+       }
         // Add extensions/stub indices for the Go language feature to work
         @Suppress("DEPRECATION")
         val extensionsRoot = Extensions.getRootArea()
@@ -134,6 +134,11 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
         extensionsRoot.registerStubIndex(GoMethodSpecFingerprintIndex())
         extensionsRoot.registerStubIndex(GoMethodSpecInheritanceIndex())
         extensionsRoot.registerStubIndex(GoTypeSpecInheritanceIndex())
+        extensionsRoot.getExtensionPoint<StubElementTypeHolderEP>("com.intellij.stubElementTypeHolder")
+            .registerExtension(StubElementTypeHolderEP().apply {
+                holderClass = $$"com.goide.stubs.GoBackendElementTypeFactory$StubTypes"
+                externalIdPrefix = "go."
+            }, disposableRule.disposable)
 
         ElementManipulators.INSTANCE.addExplicitExtension(GoStringLiteralImpl::class.java, GoStringManipulator(), disposableRule.disposable)
         application.register<StubIndex>(MockStubIndex())
@@ -189,6 +194,13 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
         return (memberFunctions + functionOrMethods).toList()
     }
 
+    /**
+     * Registers a PSI-based stub index to the given [ExtensionsArea]. This allows for the
+     * integration of custom PSI element indexing through the specified [StringStubIndexExtension].
+     *
+     * @param psi The instance of [StringStubIndexExtension] representing the stub index extension
+     *            for the desired type of PSI element.
+     */
     fun <P : PsiElement> ExtensionsArea.registerStubIndex(psi: StringStubIndexExtension<P>) {
         val exp = getExtensionPoint<StringStubIndexExtension<P>>("com.intellij.stubIndex")
         exp.registerExtension(psi, disposableRule.disposable)
@@ -431,20 +443,20 @@ private class MockStubIndex : StubIndex() {
         TODO("Not yet implemented")
 
     override fun <Key : Any?> getContainingFilesIterator(p0: StubIndexKey<Key?, *>,
-                                                         p1: @NonNls Key & Any,
+                                                         p1: Key & Any,
                                                          p2: Project,
                                                          p3: GlobalSearchScope): Iterator<VirtualFile?> =
         TODO("Not yet implemented")
 
     override fun <Key : Any?> getMaxContainingFileCount(
         p0: StubIndexKey<Key?, *>,
-        p1: @NonNls Key & Any,
+        p1: Key & Any,
         p2: Project,
         p3: GlobalSearchScope): Int = TODO("Not yet implemented")
 
     override fun forceRebuild(p0: Throwable) = TODO("Not yet implemented")
 
-    override fun getPerFileElementTypeModificationTracker(p0: StubFileElementType<*>): ModificationTracker =
+    override fun getPerFileElementTypeModificationTracker(p0: IFileElementType): ModificationTracker =
         TODO("Not yet implemented")
 
     override fun getStubIndexModificationTracker(p0: Project): ModificationTracker = TODO("Not yet implemented")
