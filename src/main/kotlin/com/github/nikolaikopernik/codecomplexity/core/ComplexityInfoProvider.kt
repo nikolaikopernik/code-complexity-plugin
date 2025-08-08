@@ -11,7 +11,7 @@ import com.intellij.psi.PsiElement
 val PLUGIN_EP_NAME: ExtensionPointName<ComplexityInfoProvider> = ExtensionPointName("com.github.nikolaikopernik.codecomplexity.languageInfoProvider")
 val PLUGIN_HINT_KEY = SettingsKey<NoSettings>("code.complexity.hint")
 
-val SUPPORTED_LANGUAGES = setOf("java", "kotlin", "python")
+val SUPPORTED_LANGUAGES = setOf("java", "kotlin", "python", "go")
 
 /**
  * Main interface to calculate complexity for different languages.
