@@ -34,11 +34,13 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     intellijPlatform {
-        intellijIdeaCommunity("2025.1.4.1")
+        intellijIdeaCommunity("2025.2")
 
         bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.kotlin")
         plugin("PythonCore", "252.23892.409")
+        plugin("org.jetbrains.plugins.go", "252.23892.360")
+        testPlugin("org.jetbrains.plugins.go", "252.23892.360")
 
         instrumentationTools()
         pluginVerifier()

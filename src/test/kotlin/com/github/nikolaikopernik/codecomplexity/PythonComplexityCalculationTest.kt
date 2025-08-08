@@ -11,7 +11,9 @@ import org.junit.Test
 
 private const val PYTHON_TEST_FILES_PATH = "src/test/testData/python"
 
+@Suppress("UnstableApiUsage")
 class PythonComplexityCalculationTest : BaseComplexityTest() {
+    @Suppress("JUnitMixedFramework")
     @Test
     fun testPythonFiles() {
         checkAllFilesInFolder(PYTHON_TEST_FILES_PATH, ".py")
@@ -22,6 +24,7 @@ class PythonComplexityCalculationTest : BaseComplexityTest() {
     override fun createLanguageElementVisitor(sink: ComplexitySink): ElementVisitor = PythonComplexityInfoProvider().getVisitor(sink)
 
     override fun parseTestFile(file: PsiFile): List<Triple<PsiElement, String, Int>> {
+        //FIXME this code seems not working: returns NO function.
         val methods: List<PyFunction> = requireNotNull(file.getChildrenOfType<PyFunction>()).toList()
 
         return methods.map { method ->
