@@ -40,6 +40,7 @@ dependencies {
         bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.kotlin")
         plugin("PythonCore", "253.28294.334")
+        plugin("Dart", "253.28294.51")
 
         pluginVerifier()
         zipSigner()
