@@ -7,7 +7,7 @@
 <!-- Plugin description -->
 This plugin calculates code complexity metric right in the editor and shows the complexity in the hint next to the method/class. It's based on the **Cognitive Complexity** metric proposed by G. Ann Campbell in [Cognitive Complexity - A new way of measuring understandability](https://www.sonarsource.com/docs/CognitiveComplexity.pdf).
 
-Works with Java, Kotlin, and Python.
+Works with Java, Kotlin, Python, and Dart.
 <!-- Plugin description end -->
 
 ---
