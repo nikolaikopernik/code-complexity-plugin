@@ -12,6 +12,7 @@ import com.github.nikolaikopernik.codecomplexity.core.PointType.LOGICAL_AND
 import com.github.nikolaikopernik.codecomplexity.core.PointType.LOGICAL_OR
 import com.github.nikolaikopernik.codecomplexity.core.PointType.LOOP_FOR
 import com.github.nikolaikopernik.codecomplexity.core.PointType.LOOP_WHILE
+import com.github.nikolaikopernik.codecomplexity.core.PointType.RECURSION
 import com.github.nikolaikopernik.codecomplexity.core.PointType.SWITCH
 import com.github.nikolaikopernik.codecomplexity.core.PointType.UNKNOWN
 import com.intellij.psi.PsiElement
@@ -19,15 +20,20 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.IElementType
 import com.jetbrains.lang.dart.DartTokenTypes
 import com.jetbrains.lang.dart.psi.DartBreakStatement
+import com.jetbrains.lang.dart.psi.DartCallExpression
 import com.jetbrains.lang.dart.psi.DartContinueStatement
 import com.jetbrains.lang.dart.psi.DartDoWhileStatement
 import com.jetbrains.lang.dart.psi.DartExpression
+import com.jetbrains.lang.dart.psi.DartFormalParameterList
 import com.jetbrains.lang.dart.psi.DartForStatement
+import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBody
+import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBodyOrNative
 import com.jetbrains.lang.dart.psi.DartFunctionExpression
 import com.jetbrains.lang.dart.psi.DartIfNullExpression
 import com.jetbrains.lang.dart.psi.DartIfStatement
 import com.jetbrains.lang.dart.psi.DartLogicAndExpression
 import com.jetbrains.lang.dart.psi.DartLogicOrExpression
+import com.jetbrains.lang.dart.psi.DartMethodDeclaration
 import com.jetbrains.lang.dart.psi.DartOnPart
 import com.jetbrains.lang.dart.psi.DartParenthesizedExpression
 import com.jetbrains.lang.dart.psi.DartPrefixExpression
@@ -64,6 +70,7 @@ internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVi
                     element.calculateBinaryComplexity()
                 }
             }
+            is DartCallExpression -> if (element.isRecursion()) sink.increaseComplexity(RECURSION)
         }
         if (element.isElseKeyword()) {
             sink.increaseComplexity(ELSE)
@@ -141,3 +148,36 @@ private fun IElementType.toPointType(): PointType = when (this) {
     DartTokenTypes.QUEST_QUEST -> LOGICAL_OR
     else -> UNKNOWN
 }
+
+private data class EnclosingFunction(val name: String, val paramCount: Int)
+
+private fun DartCallExpression.isRecursion(): Boolean {
+    val enclosing = findEnclosingFunction() ?: return false
+    if (this.expression?.text != enclosing.name) return false
+    return this.argCount() == enclosing.paramCount
+}
+
+private fun PsiElement.findEnclosingFunction(): EnclosingFunction? {
+    var p: PsiElement? = this.parent
+    while (p != null) {
+        when (p) {
+            is DartMethodDeclaration -> return p.componentName?.text?.let {
+                EnclosingFunction(it, p.formalParameterList?.countParams() ?: 0)
+            }
+            is DartFunctionDeclarationWithBody -> return p.componentName?.text?.let {
+                EnclosingFunction(it, p.formalParameterList?.countParams() ?: 0)
+            }
+            is DartFunctionDeclarationWithBodyOrNative -> return p.componentName?.text?.let {
+                EnclosingFunction(it, p.formalParameterList?.countParams() ?: 0)
+            }
+        }
+        p = p.parent
+    }
+    return null
+}
+
+private fun DartCallExpression.argCount(): Int =
+    arguments?.argumentList?.let { it.expressionList.size + it.namedArgumentList.size } ?: 0
+
+private fun DartFormalParameterList.countParams(): Int =
+    normalFormalParameterList.size + (optionalFormalParameters?.defaultFormalNamedParameterList?.size ?: 0)
