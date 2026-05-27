@@ -2,11 +2,13 @@ package com.github.nikolaikopernik.codecomplexity.dart
 
 import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
 import com.github.nikolaikopernik.codecomplexity.core.ElementVisitor
+import com.github.nikolaikopernik.codecomplexity.core.PointType.ELSE
 import com.github.nikolaikopernik.codecomplexity.core.PointType.IF
 import com.github.nikolaikopernik.codecomplexity.core.PointType.LOOP_FOR
 import com.github.nikolaikopernik.codecomplexity.core.PointType.LOOP_WHILE
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
+import com.jetbrains.lang.dart.DartTokenTypes
 import com.jetbrains.lang.dart.psi.DartDoWhileStatement
 import com.jetbrains.lang.dart.psi.DartForStatement
 import com.jetbrains.lang.dart.psi.DartIfStatement
@@ -20,6 +22,9 @@ internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVi
             is DartForStatement -> sink.increaseComplexityAndNesting(LOOP_FOR)
             is DartWhileStatement -> sink.increaseComplexityAndNesting(LOOP_WHILE)
             is DartDoWhileStatement -> sink.increaseComplexityAndNesting(LOOP_WHILE)
+        }
+        if (element.isElseKeyword()) {
+            sink.increaseComplexity(ELSE)
         }
     }
 
@@ -35,8 +40,11 @@ internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVi
     override fun shouldVisitElement(element: PsiElement): Boolean = true
 }
 
+private fun PsiElement.isElseKeyword(): Boolean =
+    node?.elementType == DartTokenTypes.ELSE && parent is DartIfStatement
+
 private fun DartIfStatement.isElseIf(): Boolean =
-    prevNotWhitespace()?.text == "else"
+    prevNotWhitespace()?.node?.elementType == DartTokenTypes.ELSE
 
 private fun DartIfStatement.prevNotWhitespace(): PsiElement? {
     var prev: PsiElement = this
