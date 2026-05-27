@@ -23,6 +23,7 @@ import com.jetbrains.lang.dart.psi.DartContinueStatement
 import com.jetbrains.lang.dart.psi.DartDoWhileStatement
 import com.jetbrains.lang.dart.psi.DartExpression
 import com.jetbrains.lang.dart.psi.DartForStatement
+import com.jetbrains.lang.dart.psi.DartFunctionExpression
 import com.jetbrains.lang.dart.psi.DartIfNullExpression
 import com.jetbrains.lang.dart.psi.DartIfStatement
 import com.jetbrains.lang.dart.psi.DartLogicAndExpression
@@ -48,6 +49,7 @@ internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVi
             is DartOnPart -> sink.increaseComplexityAndNesting(CATCH)
             is DartBreakStatement -> if (element.referenceExpression != null) sink.increaseComplexity(BREAK)
             is DartContinueStatement -> if (element.referenceExpression != null) sink.increaseComplexity(CONTINUE)
+            is DartFunctionExpression -> sink.increaseNesting()
             is DartTernaryExpression -> {
                 sink.increaseComplexityAndNesting(IF)
                 element.calculateBinaryComplexity()
@@ -77,7 +79,8 @@ internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVi
             is DartSwitchStatement,
             is DartSwitchExpression,
             is DartOnPart,
-            is DartTernaryExpression -> sink.decreaseNesting()
+            is DartTernaryExpression,
+            is DartFunctionExpression -> sink.decreaseNesting()
         }
     }
 
