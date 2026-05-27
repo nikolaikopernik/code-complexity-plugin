@@ -2,7 +2,9 @@ package com.github.nikolaikopernik.codecomplexity.dart
 
 import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
 import com.github.nikolaikopernik.codecomplexity.core.ElementVisitor
+import com.github.nikolaikopernik.codecomplexity.core.PointType.BREAK
 import com.github.nikolaikopernik.codecomplexity.core.PointType.CATCH
+import com.github.nikolaikopernik.codecomplexity.core.PointType.CONTINUE
 import com.github.nikolaikopernik.codecomplexity.core.PointType.ELSE
 import com.github.nikolaikopernik.codecomplexity.core.PointType.IF
 import com.github.nikolaikopernik.codecomplexity.core.PointType.LOOP_FOR
@@ -11,6 +13,8 @@ import com.github.nikolaikopernik.codecomplexity.core.PointType.SWITCH
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
 import com.jetbrains.lang.dart.DartTokenTypes
+import com.jetbrains.lang.dart.psi.DartBreakStatement
+import com.jetbrains.lang.dart.psi.DartContinueStatement
 import com.jetbrains.lang.dart.psi.DartDoWhileStatement
 import com.jetbrains.lang.dart.psi.DartForStatement
 import com.jetbrains.lang.dart.psi.DartIfStatement
@@ -30,6 +34,8 @@ internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVi
             is DartSwitchStatement -> sink.increaseComplexityAndNesting(SWITCH)
             is DartSwitchExpression -> sink.increaseComplexityAndNesting(SWITCH)
             is DartOnPart -> sink.increaseComplexityAndNesting(CATCH)
+            is DartBreakStatement -> if (element.referenceExpression != null) sink.increaseComplexity(BREAK)
+            is DartContinueStatement -> if (element.referenceExpression != null) sink.increaseComplexity(CONTINUE)
         }
         if (element.isElseKeyword()) {
             sink.increaseComplexity(ELSE)
