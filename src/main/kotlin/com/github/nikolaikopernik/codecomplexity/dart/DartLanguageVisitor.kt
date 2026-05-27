@@ -6,12 +6,15 @@ import com.github.nikolaikopernik.codecomplexity.core.PointType.ELSE
 import com.github.nikolaikopernik.codecomplexity.core.PointType.IF
 import com.github.nikolaikopernik.codecomplexity.core.PointType.LOOP_FOR
 import com.github.nikolaikopernik.codecomplexity.core.PointType.LOOP_WHILE
+import com.github.nikolaikopernik.codecomplexity.core.PointType.SWITCH
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
 import com.jetbrains.lang.dart.DartTokenTypes
 import com.jetbrains.lang.dart.psi.DartDoWhileStatement
 import com.jetbrains.lang.dart.psi.DartForStatement
 import com.jetbrains.lang.dart.psi.DartIfStatement
+import com.jetbrains.lang.dart.psi.DartSwitchExpression
+import com.jetbrains.lang.dart.psi.DartSwitchStatement
 import com.jetbrains.lang.dart.psi.DartWhileStatement
 
 internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
@@ -22,6 +25,8 @@ internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVi
             is DartForStatement -> sink.increaseComplexityAndNesting(LOOP_FOR)
             is DartWhileStatement -> sink.increaseComplexityAndNesting(LOOP_WHILE)
             is DartDoWhileStatement -> sink.increaseComplexityAndNesting(LOOP_WHILE)
+            is DartSwitchStatement -> sink.increaseComplexityAndNesting(SWITCH)
+            is DartSwitchExpression -> sink.increaseComplexityAndNesting(SWITCH)
         }
         if (element.isElseKeyword()) {
             sink.increaseComplexity(ELSE)
@@ -33,7 +38,9 @@ internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVi
             is DartIfStatement -> if (!element.isElseIf()) sink.decreaseNesting()
             is DartForStatement,
             is DartWhileStatement,
-            is DartDoWhileStatement -> sink.decreaseNesting()
+            is DartDoWhileStatement,
+            is DartSwitchStatement,
+            is DartSwitchExpression -> sink.decreaseNesting()
         }
     }
 
