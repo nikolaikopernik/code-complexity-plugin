@@ -94,7 +94,11 @@ internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVi
     override fun shouldVisitElement(element: PsiElement): Boolean = true
 
     private fun PsiElement.calculateBinaryComplexity(operands: MutableList<IElementType> = mutableListOf()) {
-        this.children.forEach { child ->
+        // Iterate via firstChild/nextSibling — Dart's BNF-generated PSI uses
+        // ASTDelegatePsiElement.getChildren() which only returns composite children,
+        // omitting leaf tokens like the && / || / ?? operators we need to inspect.
+        var child: PsiElement? = firstChild
+        while (child != null) {
             when {
                 child.isBinaryLogicExpression() -> child.calculateBinaryComplexity(operands)
                 child is DartParenthesizedExpression -> {
@@ -113,6 +117,7 @@ internal class DartLanguageVisitor(private val sink: ComplexitySink) : ElementVi
                     operands.add(tt)
                 }
             }
+            child = child.nextSibling
         }
     }
 }

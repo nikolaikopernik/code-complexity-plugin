@@ -48,7 +48,7 @@ String objectPattern(Shape s) {
   }
 }
 
-@complexity(2)
+@complexity(3)
 String switchInsideIf(Object o, bool flag) {
   if (flag) {                             // +1 IF
     switch (o) {                          // +2 SWITCH (nesting=1)

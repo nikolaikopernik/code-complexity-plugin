@@ -5,8 +5,8 @@ class Tests {
       if (true) {                       // +1
         parseFile("salary.txt");
       }
-    } on Exception {
-      // empty - no points if no actual handler body branching
+    } finally {
+      // try/finally — no CATCH; finally is unconditional, not a decision point.
     }
   }
 
