@@ -167,13 +167,13 @@ private fun PsiElement.findEnclosingFunction(): EnclosingFunction? {
     while (p != null) {
         when (p) {
             is DartMethodDeclaration -> return p.componentName?.text?.let {
-                EnclosingFunction(it, p.formalParameterList?.countParams() ?: 0)
+                EnclosingFunction(it, p.formalParameterList.countParams())
             }
-            is DartFunctionDeclarationWithBody -> return p.componentName?.text?.let {
-                EnclosingFunction(it, p.formalParameterList?.countParams() ?: 0)
+            is DartFunctionDeclarationWithBody -> return p.componentName.text?.let {
+                EnclosingFunction(it, p.formalParameterList.countParams())
             }
-            is DartFunctionDeclarationWithBodyOrNative -> return p.componentName?.text?.let {
-                EnclosingFunction(it, p.formalParameterList?.countParams() ?: 0)
+            is DartFunctionDeclarationWithBodyOrNative -> return p.componentName.text?.let {
+                EnclosingFunction(it, p.formalParameterList.countParams())
             }
         }
         p = p.parent
