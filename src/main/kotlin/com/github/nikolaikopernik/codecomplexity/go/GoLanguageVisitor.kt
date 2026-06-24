@@ -145,15 +145,18 @@ class GoLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
 
             is GoStatement -> {
                 val parent = element.parent
-                when {
-                    // calculate a combination of logical operators in if statements
-                    element is GoSimpleStatement && parent is GoIfStatement -> calculateIfStatementOperators(parent, element)
+                when (// calculate a combination of logical operators in if statements
+                    element) {
+                    is GoSimpleStatement if parent is GoIfStatement -> calculateIfStatementOperators(parent, element)
+
                     // calculate a combination of logical operators
-                    element is GoSimpleStatement && element.hasChild<GoVarSpec>() -> calculateIfStatementOperators(element, element)
+                    is GoSimpleStatement if element.hasChild<GoVarSpec>() -> calculateIfStatementOperators(element, element)
+
                     // calculate a combination of logical operators in assignment statements
-                    element is GoAssignmentStatement && (element.hasChild<GoAndExpr>() || element.hasChild<GoOrExpr>()) -> calculateIfStatementOperators(element, element)
+                    is GoAssignmentStatement if (element.hasChild<GoAndExpr>() || element.hasChild<GoOrExpr>()) -> calculateIfStatementOperators(element, element)
+
                     // calculate a combination of logical operators in return statements
-                    element is GoReturnStatement && (element.hasChild<GoAndExpr>() || element.hasChild<GoOrExpr>()) -> calculateIfStatementOperators(element, element)
+                    is GoReturnStatement if (element.hasChild<GoAndExpr>() || element.hasChild<GoOrExpr>()) -> calculateIfStatementOperators(element, element)
                 }
             }
         }

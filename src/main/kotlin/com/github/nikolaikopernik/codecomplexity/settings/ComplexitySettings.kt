@@ -7,7 +7,6 @@ import com.github.nikolaikopernik.codecomplexity.settings.ComplexityLevel.MIDDLE
 import com.github.nikolaikopernik.codecomplexity.settings.ComplexityLevel.SIMPLE
 import com.intellij.openapi.application.CachedSingletonsRegistry
 import com.intellij.openapi.util.IconLoader
-import java.awt.Color
 import java.util.function.Supplier
 import javax.swing.Icon
 
@@ -72,7 +71,4 @@ private fun customHintTextWithScore(template: String, score: String): String {
     }
 }
 
-private fun String.parseColor() = Color(this.drop(1).toInt(16), false)
 
-
-fun Color.toHex(): String = String.format("#%02x%02x%02x", this.red, this.green, this.blue)

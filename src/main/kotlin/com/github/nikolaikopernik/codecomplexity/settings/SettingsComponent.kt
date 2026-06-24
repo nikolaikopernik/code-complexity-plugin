@@ -12,7 +12,6 @@ import com.intellij.util.ui.FormBuilder
 import java.awt.BorderLayout
 import java.awt.event.ItemEvent
 import javax.swing.BoxLayout
-import javax.swing.JComponent
 import javax.swing.JPanel
 
 /**
@@ -67,9 +66,6 @@ class SettingsComponent {
         explanationText.isAllowAutoWrapping = true
         explanationText.maximumWidth = 400
     }
-
-    val preferredFocusedComponent: JComponent
-        get() = useDefaults
 
     fun setUseDefaults(useDefaults: Boolean) {
         this.useDefaults.setSelected(useDefaults)
