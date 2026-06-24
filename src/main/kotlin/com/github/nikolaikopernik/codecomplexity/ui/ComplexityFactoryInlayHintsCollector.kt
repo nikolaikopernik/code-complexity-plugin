@@ -56,7 +56,7 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
     }
 
     private fun applySinkResults(element: PsiElement, score: ComplexitySink, sink: InlayHintsSink) {
-        getPresentation(element, score).let {
+        getPresentation(score).let {
             sink.addInlineElement(
                 offset = element.textOffset,
                 relatesToPrecedingText = true,
@@ -66,8 +66,8 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
         }
     }
 
-    private fun getPresentation(element: PsiElement, complexityScore: ComplexitySink): InlayPresentation {
-        val text = factory.inset(factory.offsetFromTopForSmallText(getTextPresentation(complexityScore, editor)))
+    private fun getPresentation(complexityScore: ComplexitySink): InlayPresentation {
+        val text = factory.inset(factory.offsetFromTopForSmallText(getTextPresentation(complexityScore)))
         if (setting.showIcon) {
             return factory.seq(
                 factory.offsetFromTopForSmallText(
@@ -90,7 +90,7 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
                                           WithAttributesPresentation.AttributesFlags().withIsDefault(true))
     }
 
-    private fun getTextPresentation(complexity: ComplexitySink, editor: Editor): InlayPresentation =
+    private fun getTextPresentation(complexity: ComplexitySink): InlayPresentation =
         correctTextColour(
             factory.inset(
                 factory.smallText(complexity.getConfiguredText()),
