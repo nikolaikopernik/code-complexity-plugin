@@ -1,3 +1,6 @@
+// Uses the experimental Python PSI API - no stable equivalent yet.
+@file:Suppress("UnstableApiUsage")
+
 package com.github.nikolaikopernik.codecomplexity.python
 
 import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
