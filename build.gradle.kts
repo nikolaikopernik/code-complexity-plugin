@@ -4,8 +4,8 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
     id("java") // Java support
-    id("org.jetbrains.intellij.platform") version "2.11.0" // Gradle IntelliJ Plugin
-    alias(libs.plugins.kotlin) version "2.2.0" // Kotlin support
+    id("org.jetbrains.intellij.platform") version "2.18.1" // Gradle IntelliJ Plugin
+    alias(libs.plugins.kotlin) // Kotlin support
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
 }
 
@@ -35,14 +35,14 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     intellijPlatform {
-        intellijIdea("2025.3")
+        intellijIdea("2026.2")
 
         bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.kotlin")
-        plugin("PythonCore", "253.28294.334")
-        plugin("Dart", "253.28294.51")
-        plugin("org.jetbrains.plugins.go", "253.33514.17")
-        testPlugin("org.jetbrains.plugins.go", "253.33514.17")
+        plugin("PythonCore", "262.8665.258")
+        plugin("Dart", "507.0.0")
+        plugin("org.jetbrains.plugins.go", "262.8665.258")
+        testPlugin("org.jetbrains.plugins.go", "262.8665.258")
 
         pluginVerifier()
         zipSigner()

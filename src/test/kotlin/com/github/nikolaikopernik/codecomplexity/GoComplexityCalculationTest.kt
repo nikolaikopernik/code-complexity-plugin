@@ -31,19 +31,6 @@ import com.goide.psi.impl.GoStringLiteralImpl
 import com.goide.psi.impl.manipulator.GoStringManipulator
 import com.goide.sdk.GoBasedSdk
 import com.goide.sdk.GoBasedSdkVetoer
-import com.goide.stubs.index.GoAllPrivateNamesIndex
-import com.goide.stubs.index.GoAllPublicNamesIndex
-import com.goide.stubs.index.GoFunctionIndex
-import com.goide.stubs.index.GoMethodFingerprintIndex
-import com.goide.stubs.index.GoMethodIndex
-import com.goide.stubs.index.GoMethodSpecFingerprintIndex
-import com.goide.stubs.index.GoMethodSpecInheritanceIndex
-import com.goide.stubs.index.GoNonPackageLevelNamesIndex
-import com.goide.stubs.index.GoPackageLevelPublicElementsIndex
-import com.goide.stubs.index.GoPackagesIndex
-import com.goide.stubs.index.GoTypeAliasIndex
-import com.goide.stubs.index.GoTypeSpecInheritanceIndex
-import com.goide.stubs.index.GoTypesIndex
 import com.intellij.go.backend.GoBackendParserDefinition
 import com.intellij.go.frontback.api.GoElementTypeFactorySupplier
 import com.intellij.lang.LanguageParserDefinitions
@@ -55,10 +42,7 @@ import com.intellij.openapi.extensions.ExtensionsArea
 import com.intellij.openapi.fileTypes.ExtensionFileNameMatcher
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.registry.Registry
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiDirectory
@@ -66,19 +50,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.PsiTreeChangePreprocessor
 import com.intellij.psi.impl.file.PsiDirectoryFactory
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.stubs.StringStubIndexExtension
-import com.intellij.psi.stubs.StubElementTypeHolderEP
-import com.intellij.psi.stubs.StubIndex
-import com.intellij.psi.stubs.StubIndexKey
-import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.util.childrenOfType
 import com.intellij.psi.util.descendants
 import com.intellij.testFramework.DisposableRule
 import com.intellij.testFramework.registerServiceInstance
 import com.intellij.testFramework.unregisterService
-import com.intellij.util.Processor
-import com.intellij.util.indexing.IdFilter
 import org.jdom.Element
 import org.junit.Rule
 import org.junit.Test
@@ -113,35 +89,19 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
         application.runWriteAction {
             application.registerServiceInstance(GoElementTypeFactorySupplier::class.java, GoElementTypeFactorySupplierImpl())
             application.service<FileTypeManager>()?.associate(GoFileType.INSTANCE, ExtensionFileNameMatcher("go"))
-       }
-        // Add extensions/stub indices for the Go language feature to work
+        }
+        // Older Go plugin test fixtures need these extension points declared by the test.
         @Suppress("DEPRECATION")
         val extensionsRoot = Extensions.getRootArea()
-        extensionsRoot
-            .registerExtensionPoint("com.goide.packageFactory", MockPackageFactory::class.java.canonicalName, ExtensionPoint.Kind.INTERFACE, true)
-        extensionsRoot
-            .registerExtensionPoint("com.goide.sdk.sdkVetoer", MockSdkVetoer::class.java.canonicalName, ExtensionPoint.Kind.INTERFACE, true)
-        extensionsRoot.registerStubIndex(GoMethodIndex())
-        extensionsRoot.registerStubIndex(GoPackagesIndex())
-        extensionsRoot.registerStubIndex(GoAllPrivateNamesIndex())
-        extensionsRoot.registerStubIndex(GoFunctionIndex())
-        extensionsRoot.registerStubIndex(GoAllPublicNamesIndex())
-        extensionsRoot.registerStubIndex(GoPackageLevelPublicElementsIndex())
-        extensionsRoot.registerStubIndex(GoTypesIndex())
-        extensionsRoot.registerStubIndex(GoTypeAliasIndex())
-        extensionsRoot.registerStubIndex(GoNonPackageLevelNamesIndex())
-        extensionsRoot.registerStubIndex(GoMethodFingerprintIndex())
-        extensionsRoot.registerStubIndex(GoMethodSpecFingerprintIndex())
-        extensionsRoot.registerStubIndex(GoMethodSpecInheritanceIndex())
-        extensionsRoot.registerStubIndex(GoTypeSpecInheritanceIndex())
-        extensionsRoot.getExtensionPoint<StubElementTypeHolderEP>("com.intellij.stubElementTypeHolder")
-            .registerExtension(StubElementTypeHolderEP().apply {
-                holderClass = $$"com.goide.stubs.GoBackendElementTypeFactory$StubTypes"
-                externalIdPrefix = "go."
-            }, disposableRule.disposable)
-
+        extensionsRoot.registerExtensionPointIfMissing(
+            "com.goide.packageFactory",
+            MockPackageFactory::class.java.canonicalName ?: MockPackageFactory::class.java.name
+        )
+        extensionsRoot.registerExtensionPointIfMissing(
+            "com.goide.sdk.sdkVetoer",
+            MockSdkVetoer::class.java.canonicalName ?: MockSdkVetoer::class.java.name
+        )
         ElementManipulators.INSTANCE.addExplicitExtension(GoStringLiteralImpl::class.java, GoStringManipulator(), disposableRule.disposable)
-        application.register<StubIndex>(MockStubIndex())
 
         project.extensionArea.getExtensionPoint<PsiTreeChangePreprocessor>("com.intellij.psi.treeChangePreprocessor")
             .registerExtension(GoPsiTreeChangeProcessor(), disposableRule.disposable)
@@ -188,16 +148,10 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
         return (memberFunctions + functionOrMethods).toList()
     }
 
-    /**
-     * Registers a PSI-based stub index to the given [ExtensionsArea]. This allows for the
-     * integration of custom PSI element indexing through the specified [StringStubIndexExtension].
-     *
-     * @param psi The instance of [StringStubIndexExtension] representing the stub index extension
-     *            for the desired type of PSI element.
-     */
-    fun <P : PsiElement> ExtensionsArea.registerStubIndex(psi: StringStubIndexExtension<P>) {
-        val exp = getExtensionPoint<StringStubIndexExtension<P>>("com.intellij.stubIndex")
-        exp.registerExtension(psi, disposableRule.disposable)
+    private fun ExtensionsArea.registerExtensionPointIfMissing(name: String, className: String) {
+        if (!hasExtensionPoint(name)) {
+            registerExtensionPoint(name, className, ExtensionPoint.Kind.INTERFACE, true)
+        }
     }
 
     private companion object {
@@ -401,9 +355,6 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
             return getService(T::class.java)
         }
 
-        inline fun <reified T : Any> Application.register(instance: T) {
-            registerServiceInstance(T::class.java, instance)
-        }
     }
 }
 
@@ -419,41 +370,6 @@ private class MockPackageFactory : GoPackageFactory {
     override fun createPackage(name: String,
                                vararg directories: PsiDirectory?): GoPackage =
         directories.firstNotNullOf { it }.let { GoPackage.`in`(it, name) }
-}
-
-@Suppress("UnstableApiUsage")
-private class MockStubIndex : StubIndex() {
-
-    override fun <Key : Any?, Psi : PsiElement?> processElements(
-        indexKey: StubIndexKey<Key?, Psi?>,
-        key: Key & Any,
-        project: Project,
-        scope: GlobalSearchScope?,
-        idFilter: IdFilter?,
-        requiredClass: Class<Psi?>,
-        processor: Processor<in Psi>): Boolean = true
-
-    override fun <Key : Any?> getAllKeys(p0: StubIndexKey<Key?, *>, p1: Project): Collection<Key?> =
-        TODO("Not yet implemented")
-
-    override fun <Key : Any?> getContainingFilesIterator(p0: StubIndexKey<Key?, *>,
-                                                         p1: Key & Any,
-                                                         p2: Project,
-                                                         p3: GlobalSearchScope): Iterator<VirtualFile?> =
-        TODO("Not yet implemented")
-
-    override fun <Key : Any?> getMaxContainingFileCount(
-        p0: StubIndexKey<Key?, *>,
-        p1: Key & Any,
-        p2: Project,
-        p3: GlobalSearchScope): Int = TODO("Not yet implemented")
-
-    override fun forceRebuild(p0: Throwable) = TODO("Not yet implemented")
-
-    override fun getPerFileElementTypeModificationTracker(p0: IFileElementType): ModificationTracker =
-        TODO("Not yet implemented")
-
-    override fun getStubIndexModificationTracker(p0: Project): ModificationTracker = TODO("Not yet implemented")
 }
 
 private class MockSdkVetoer : GoBasedSdkVetoer {

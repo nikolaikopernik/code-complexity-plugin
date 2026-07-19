@@ -46,7 +46,7 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
             is PsiDoWhileStatement -> sink.increaseComplexityAndNesting(LOOP_WHILE)
             is PsiIfStatement -> element.processIfExpression()
             is PsiKeyword -> {
-                if (element.text == PsiKeyword.ELSE && element.parent is PsiIfStatement) {
+                if (element.text == "else" && element.parent is PsiIfStatement) {
                     sink.increaseComplexity(ELSE)
                 }
             }
@@ -150,7 +150,7 @@ private fun PsiIfStatement.isElseIf(): Boolean =
     this.prevNotWhitespace().isElse()
 
 private fun PsiElement?.isElse(): Boolean = this?.let {
-    it is PsiKeyword && it.text == PsiKeyword.ELSE
+    it is PsiKeyword && it.text == "else"
 } ?: false
 
 private fun PsiIfStatement.prevNotWhitespace(): PsiElement? {

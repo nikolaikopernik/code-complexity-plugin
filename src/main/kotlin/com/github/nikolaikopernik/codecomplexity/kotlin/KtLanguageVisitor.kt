@@ -3,48 +3,29 @@ package com.github.nikolaikopernik.codecomplexity.kotlin
 import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
 import com.github.nikolaikopernik.codecomplexity.core.ElementVisitor
 import com.github.nikolaikopernik.codecomplexity.core.PointType
-import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
-import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.lexer.KtToken
 import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.psi.KtArrayAccessExpression
 import org.jetbrains.kotlin.psi.KtBinaryExpression
-import org.jetbrains.kotlin.psi.KtBlockExpression
 import org.jetbrains.kotlin.psi.KtBreakExpression
-import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtCatchClause
-import org.jetbrains.kotlin.psi.KtClassBody
-import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtContainerNodeForControlStructureBody
 import org.jetbrains.kotlin.psi.KtContinueExpression
 import org.jetbrains.kotlin.psi.KtDoWhileExpression
-import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtExpression
-import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtForExpression
-import org.jetbrains.kotlin.psi.KtFunctionLiteral
 import org.jetbrains.kotlin.psi.KtIfExpression
 import org.jetbrains.kotlin.psi.KtLambdaExpression
 import org.jetbrains.kotlin.psi.KtNameReferenceExpression
 import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtOperationExpression
 import org.jetbrains.kotlin.psi.KtOperationReferenceExpression
 import org.jetbrains.kotlin.psi.KtParenthesizedExpression
 import org.jetbrains.kotlin.psi.KtPrefixExpression
-import org.jetbrains.kotlin.psi.KtScript
-import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.psi.KtStatementExpression
-import org.jetbrains.kotlin.psi.KtThisExpression
 import org.jetbrains.kotlin.psi.KtValueArgumentList
 import org.jetbrains.kotlin.psi.KtWhenExpression
 import org.jetbrains.kotlin.psi.KtWhileExpression
-import org.jetbrains.kotlin.psi.psiUtil.parents
-import org.jetbrains.kotlin.resolve.inline.InlineUtil
-import org.jetbrains.kotlin.types.expressions.OperatorConventions
-import org.jetbrains.kotlin.util.OperatorNameConventions
 
 class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     override fun processElement(element: PsiElement) {
@@ -138,14 +119,6 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
         )
     }
 
-    private fun getNegationOperationToken(): KtToken {
-        return KtTokens.EXCL
-    }
-
-    private fun getTempNegOperationToken(): KtToken {
-        return KtTokens.QUEST
-    }
-
     /**
      * Checking if recursion is used.
      * Have to do it fast and dirty as it should be fast to avoid exception in IDEA.
@@ -166,64 +139,6 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
             return true
         }
         return false
-    }
-
-    private fun getEnclosingFunction(element: NavigatablePsiElement,
-                                     stopOnNonInlinedLambdas: Boolean): KtNamedFunction? {
-        for (parent in element.parents) {
-            when (parent) {
-                is KtFunctionLiteral -> if (stopOnNonInlinedLambdas && !InlineUtil.isInlinedArgument(
-                        parent,
-                        parent.analyze(),
-                        false
-                    )
-                ) return null
-
-                is KtNamedFunction -> {
-                    when (parent.parent) {
-                        is KtBlockExpression, is KtClassBody, is KtFile, is KtScript -> return parent
-                        else -> if (stopOnNonInlinedLambdas && !InlineUtil.isInlinedArgument(
-                                parent,
-                                parent.analyze(),
-                                false
-                            )
-                        ) return null
-                    }
-                }
-
-                is KtClassOrObject -> return null
-            }
-        }
-        return null
-    }
-
-    private fun getCallNameFromPsi(element: KtElement): Name? {
-        when (element) {
-            is KtSimpleNameExpression -> when (val elementParent = element.getParent()) {
-                is KtCallExpression -> return Name.identifier(element.getText())
-                is KtOperationExpression -> {
-                    val operationReference = elementParent.operationReference
-                    if (element == operationReference) {
-                        val node = operationReference.getReferencedNameElementType()
-                        return if (node is KtToken) {
-                            val conventionName = if (elementParent is KtPrefixExpression)
-                                OperatorConventions.getNameForOperationSymbol(node, true, false)
-                            else
-                                OperatorConventions.getNameForOperationSymbol(node)
-
-                            conventionName ?: Name.identifier(element.getText())
-                        } else {
-                            Name.identifier(element.getText())
-                        }
-                    }
-                }
-            }
-
-            is KtArrayAccessExpression -> return OperatorNameConventions.GET
-            is KtThisExpression -> if (element.getParent() is KtCallExpression) return OperatorNameConventions.INVOKE
-        }
-
-        return null
     }
 }
 
