@@ -104,9 +104,9 @@ intellijPlatform {
     }
 
     pluginVerification {
-        // The Gradle plugin added INTERNAL_API_USAGES to the default failureLevel in 2.15.0.  Our two internal calls
-        // (PresentationFactory.offsetFromTopForSmallText and scaledIcon) come from the old inlay-hints API and have no
-        // public replacement, so keep the  pre-2.15.0 set until the UI layer moves to the declarative API.
+        // The Gradle plugin added INTERNAL_API_USAGES to the default failureLevel in 2.15.0.  One internal call is
+        // left: PresentationFactory.offsetFromTopForSmallText, from the old inlay-hints API, which has no public
+        // equivalent.  Keep the pre-2.15.0 set until the UI layer moves to the declarative API.
         failureLevel = listOf(
             VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
             VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,

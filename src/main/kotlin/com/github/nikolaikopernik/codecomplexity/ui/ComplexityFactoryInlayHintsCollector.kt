@@ -71,9 +71,7 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
         if (setting.showIcon) {
             return factory.seq(
                 factory.offsetFromTopForSmallText(
-                    factory.scaledIcon(
-                        complexityScore.getConfiguredIcon(),
-                        1.0f)),
+                    factory.smallScaledIcon(complexityScore.getConfiguredIcon())),
                 text)
         }
         return text
