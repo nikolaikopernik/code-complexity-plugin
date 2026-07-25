@@ -1,6 +1,7 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 
 plugins {
     id("java") // Java support
@@ -103,6 +104,14 @@ intellijPlatform {
     }
 
     pluginVerification {
+        // The Gradle plugin added INTERNAL_API_USAGES to the default failureLevel in 2.15.0.  One internal call is
+        // left: PresentationFactory.offsetFromTopForSmallText, from the old inlay-hints API, which has no public
+        // equivalent.  Keep the pre-2.15.0 set until the UI layer moves to the declarative API.
+        failureLevel = listOf(
+            VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+            VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
+        )
+
         ides {
             recommended()
         }

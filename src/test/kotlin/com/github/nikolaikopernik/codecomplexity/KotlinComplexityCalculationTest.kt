@@ -7,12 +7,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.childrenOfType
 import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.junit.Test
 
 private const val KOTLIN_TEST_FILES_PATH = "src/test/testData/kotlin"
 
 class KotlinComplexityCalculationTest : BaseComplexityTest() {
-    @Test
     fun testKotlinFiles() {
         checkAllFilesInFolder(KOTLIN_TEST_FILES_PATH, ".kt")
     }

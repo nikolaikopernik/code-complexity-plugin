@@ -1,10 +1,9 @@
 package com.github.nikolaikopernik.codecomplexity.settings
 
 import com.intellij.openapi.options.Configurable
-import com.intellij.openapi.project.Project
 import javax.swing.JComponent
 
-class SettingsConfigurable(val project: Project) : Configurable {
+class SettingsConfigurable : Configurable {
     private var component: SettingsComponent? = null
 
     override fun createComponent(): JComponent {
