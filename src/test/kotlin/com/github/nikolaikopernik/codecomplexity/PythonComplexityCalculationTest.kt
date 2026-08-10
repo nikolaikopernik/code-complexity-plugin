@@ -16,7 +16,7 @@ class PythonComplexityCalculationTest : BaseComplexityTest() {
     @Suppress("JUnitMixedFramework")
     @Test
     fun testPythonFiles() {
-        checkAllFilesInFolder(PYTHON_TEST_FILES_PATH, ".py")
+        checkAllFilesInFolder(PYTHON_TEST_FILES_PATH, ".py", expectedMethodCount = 19)
     }
 
     override fun getTestDataPath() = PYTHON_TEST_FILES_PATH

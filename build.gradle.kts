@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.PathSensitivity
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
@@ -127,6 +128,11 @@ changelog {
 tasks {
     wrapper {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
+    }
+
+    test {
+        // testData sits outside processed resources; without this an edit there doesn't re-run tests
+        inputs.dir("src/test/testData").withPathSensitivity(PathSensitivity.RELATIVE)
     }
 
     publishPlugin {

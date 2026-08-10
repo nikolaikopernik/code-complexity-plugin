@@ -19,7 +19,7 @@ import com.jetbrains.lang.dart.psi.DartSetterDeclaration
 private const val DART_TEST_FILES_PATH = "src/test/testData/dart"
 
 class DartComplexityCalculationTest : BaseComplexityTest() {
-    fun testDartFiles() = checkAllFilesInFolder(DART_TEST_FILES_PATH, ".dart")
+    fun testDartFiles() = checkAllFilesInFolder(DART_TEST_FILES_PATH, ".dart", expectedMethodCount = 44)
 
     override fun getTestDataPath() = DART_TEST_FILES_PATH
 

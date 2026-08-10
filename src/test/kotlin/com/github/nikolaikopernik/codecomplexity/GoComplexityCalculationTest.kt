@@ -122,7 +122,7 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
     @Suppress("JUnitMixedFramework")
     @Test
     fun testGoComplexity() {
-        checkAllFilesInFolder(GO_TEST_FILES_PATH, ".go")
+        checkAllFilesInFolder(GO_TEST_FILES_PATH, ".go", expectedMethodCount = 32)
     }
 
     override fun getTestDataPath() = GO_TEST_FILES_PATH
