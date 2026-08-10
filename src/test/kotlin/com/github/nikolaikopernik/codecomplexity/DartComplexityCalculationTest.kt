@@ -8,45 +8,33 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.psi.DartArguments
 import com.jetbrains.lang.dart.psi.DartComponent
-import com.jetbrains.lang.dart.psi.DartFactoryConstructorDeclaration
-import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBody
-import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBodyOrNative
-import com.jetbrains.lang.dart.psi.DartGetterDeclaration
-import com.jetbrains.lang.dart.psi.DartMethodDeclaration
-import com.jetbrains.lang.dart.psi.DartNamedConstructorDeclaration
-import com.jetbrains.lang.dart.psi.DartSetterDeclaration
 
 private const val DART_TEST_FILES_PATH = "src/test/testData/dart"
 
 class DartComplexityCalculationTest : BaseComplexityTest() {
+    private val provider = DartComplexityInfoProvider()
+
     fun testDartFiles() = checkAllFilesInFolder(DART_TEST_FILES_PATH, ".dart", expectedMethodCount = 44)
 
     override fun getTestDataPath() = DART_TEST_FILES_PATH
 
     override fun createLanguageElementVisitor(sink: ComplexitySink): ElementVisitor =
-        DartComplexityInfoProvider().getVisitor(sink)
+        provider.getVisitor(sink)
 
     override fun parseTestFile(file: PsiFile): List<Triple<PsiElement, String, Int>> {
-        val declarations = PsiTreeUtil.findChildrenOfAnyType(
-            file,
-            DartMethodDeclaration::class.java,
-            DartFunctionDeclarationWithBody::class.java,
-            DartFunctionDeclarationWithBodyOrNative::class.java,
-            DartGetterDeclaration::class.java,
-            DartSetterDeclaration::class.java,
-            DartFactoryConstructorDeclaration::class.java,
-            DartNamedConstructorDeclaration::class.java
-        )
-        return declarations.mapNotNull { decl ->
-            val component = decl as DartComponent
-            val complexity = component.complexityAnnotationValue() ?: return@mapNotNull null
-            val name = component.componentName?.text ?: return@mapNotNull null
-            Triple(decl as PsiElement, name, complexity)
-        }
+        // Declarations come from the provider's own predicate, so the expectedMethodCount
+        // guard keeps the test aligned with what the plugin actually shows hints for.
+        return PsiTreeUtil.collectElements(file) { provider.isComplexitySuitableMember(it) }
+            .mapNotNull { decl ->
+                val component = decl as DartComponent
+                val complexity = component.complexityAnnotationValue() ?: return@mapNotNull null
+                val name = component.componentName?.text ?: return@mapNotNull null
+                Triple(decl as PsiElement, name, complexity)
+            }
     }
 
     private fun DartComponent.complexityAnnotationValue(): Int? {
-        val metadata = metadataList.firstOrNull { it.referenceExpression?.text == "complexity" } ?: return null
+        val metadata = metadataList.firstOrNull { it.referenceExpression.text == "complexity" } ?: return null
         val args = PsiTreeUtil.findChildOfType(metadata, DartArguments::class.java) ?: return null
         val firstArg = args.argumentList?.expressionList?.firstOrNull() ?: return null
         return firstArg.text.toIntOrNull()
