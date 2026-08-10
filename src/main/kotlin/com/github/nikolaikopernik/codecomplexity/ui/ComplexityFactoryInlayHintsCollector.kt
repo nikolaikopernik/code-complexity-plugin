@@ -17,13 +17,15 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiRecursiveElementVisitor
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
+import org.jetbrains.annotations.VisibleForTesting
 
 @Suppress("UnstableApiUsage")
 class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: ComplexityInfoProvider,
                                            private val editor: Editor) : FactoryInlayHintsCollector(editor) {
     private val setting: SettingsState = SettingsState.INSTANCE
 
-    private fun getClassComplexity(element: PsiElement): ComplexitySink {
+    @VisibleForTesting
+    internal fun getClassComplexity(element: PsiElement): ComplexitySink {
         return ComplexitySink().also { sink ->
             element.accept(object : PsiRecursiveElementVisitor() {
                 override fun visitElement(element: PsiElement) {
