@@ -12,40 +12,43 @@ abstract class BaseComplexityTest : LightPlatformCodeInsightTestCase() {
         val folder = File(path)
         assertTrue("Test data folder not found: ${folder.absolutePath}", folder.isDirectory)
 
-        val tests = folder.listFiles().orEmpty().filter { it.name.endsWith(extension) }
+        val tests = folder.listFiles().orEmpty().filter { it.name.endsWith(extension) }.sorted()
         assertFalse("No *$extension files in ${folder.absolutePath}", tests.isEmpty())
 
-        val checked = tests.sumOf { "/${it.name}".testAllMethodsInFile() }
-        assertEquals("Checked-method count for $path drifted: update expectedMethodCount if the " +
-                         "test data changed, otherwise methods are being silently skipped.",
-                     expectedMethodCount,
-                     checked)
+        val failures = mutableListOf<String>()
+        val checked = tests.sumOf { "/${it.name}".checkAllMethodsInFile(failures) }
+        if (checked != expectedMethodCount) {
+            failures += "Checked-method count for $path drifted: expected $expectedMethodCount, was $checked. " +
+                "Update expectedMethodCount if the test data changed, otherwise methods are being silently skipped."
+        }
+        if (failures.isNotEmpty()) {
+            fail("${failures.size} failure(s) in $path:\n" + failures.joinToString("\n"))
+        }
     }
 
     override fun getTestName(lowercaseFirstLetter: Boolean): String {
         return super.getTestName(lowercaseFirstLetter).trim().replace(' ', '_')
     }
 
-    private fun String.testAllMethodsInFile(): Int {
-        println()
+    /**
+     * Checks every parsed method in the file, appending mismatches to [failures] instead of
+     * failing fast, so one run reports them all. Returns the number of methods checked.
+     */
+    private fun String.checkAllMethodsInFile(failures: MutableList<String>): Int {
         configureByFile(this)
         val methods = parseTestFile(file)
-        assertFalse("No annotated methods parsed from ${this.drop(1)}", methods.isEmpty())
+        val fileName = this.drop(1)
+        assertFalse("No annotated methods parsed from $fileName", methods.isEmpty())
 
-        methods.forEach { (element, name, complexity) ->
-            print("Checking method '$name()' in file ${this.drop(1)} file... ")
+        methods.forEach { (element, name, expected) ->
             val sink = ComplexitySink().apply { element.accept(createLanguageElementVisitor(this)) }
-            assertEquals("Incorrect complexity calculated for method '$name()' in the file ${this.drop(1)}.\n" +
-                             "The following points have been seen by the sink: \n" + sink.getPoints()
-                .joinToString { it.toString() + '\n' },
-                         complexity,
-                         sink.getComplexity()
-            )
-            assertEquals("Incorrect nesting after processing method '$name()' in the file ${this.drop(1)}.",
-                         0,
-                         sink.getNesting()
-            )
-            println("OK")
+            if (sink.getComplexity() != expected) {
+                failures += "$fileName#$name(): complexity expected $expected, got ${sink.getComplexity()}. Points:\n" +
+                    sink.getPoints().joinToString("\n") { "    $it" }.ifEmpty { "    (none)" }
+            }
+            if (sink.getNesting() != 0) {
+                failures += "$fileName#$name(): nesting expected 0, got ${sink.getNesting()}"
+            }
         }
         return methods.size
     }
