@@ -135,6 +135,16 @@ tasks {
     test {
         // testData sits outside processed resources; without this an edit there doesn't re-run tests
         inputs.dir("src/test/testData").withPathSensitivity(PathSensitivity.RELATIVE)
+
+        // Benchmarks are an instrument for perf work, not a gate: CI runners are too noisy for a
+        // timing threshold and there is nowhere to keep a baseline.  ./gradlew test -Pbenchmarks
+        if (providers.gradleProperty("benchmarks").isPresent) {
+            filter.includeTestsMatching("*Benchmark")
+            testLogging.showStandardStreams = true
+            outputs.upToDateWhen { false }
+        } else {
+            filter.excludeTestsMatching("*Benchmark")
+        }
     }
 
     publishPlugin {
