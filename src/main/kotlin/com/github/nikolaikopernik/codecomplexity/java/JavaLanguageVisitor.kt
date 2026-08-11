@@ -132,7 +132,7 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
 
 /**
  * Checking if recursion is used.
- * Same problems as in [KtLanguageVisitor]
+ * Same problems as in [com.github.nikolaikopernik.codecomplexity.kotlin.KtLanguageVisitor]
  */
 private fun PsiMethodCallExpression.isRecursion(): Boolean {
     val parentMethod: PsiMethod = this.findCurrentMethod() ?: return false
@@ -144,7 +144,7 @@ private fun PsiMethodCallExpression.isRecursion(): Boolean {
 private fun PsiElement.findCurrentMethod(): PsiMethod? {
     var element: PsiElement? = this
     while (element != null && element !is PsiMethod) element = element.parent
-    return element?.let { it as PsiMethod }
+    return element
 }
 
 private fun PsiIfStatement.isElseIf(): Boolean =

@@ -158,8 +158,7 @@ private data class EnclosingFunction(val name: String, val paramCount: Int)
 
 private fun DartCallExpression.isRecursion(): Boolean {
     val enclosing = findEnclosingFunction() ?: return false
-    if (this.expression?.text != enclosing.name) return false
-    return this.argCount() == enclosing.paramCount
+    return this.expression?.text == enclosing.name && this.argCount() == enclosing.paramCount
 }
 
 private fun PsiElement.findEnclosingFunction(): EnclosingFunction? {

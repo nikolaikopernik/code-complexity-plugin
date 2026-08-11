@@ -25,7 +25,6 @@ import com.jetbrains.python.psi.PyLambdaExpression
 import com.jetbrains.python.psi.PyMatchStatement
 import com.jetbrains.python.psi.PyParenthesizedExpression
 import com.jetbrains.python.psi.PyPrefixExpression
-import com.jetbrains.python.psi.PyTryExceptStatement
 import com.jetbrains.python.psi.PyWhileStatement
 
 internal class PythonLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
@@ -135,5 +134,5 @@ internal class PythonLanguageVisitor(private val sink: ComplexitySink) : Element
 fun PsiElement.findCurrentPythonMethod(): PyFunction? {
     var element: PsiElement? = this
     while (element != null && element !is PyFunction) element = element.parent
-    return element?.let { it as PyFunction }
+    return element
 }

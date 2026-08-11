@@ -96,12 +96,8 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
                 factory.smallText(complexity.getConfiguredText()),
                 left = 2, right = 2))
 
-    override fun equals(other: Any?): Boolean {
-        if (other is ComplexityFactoryInlayHintsCollector) {
-            return editor == other.editor
-        }
-        return false
-    }
+    override fun equals(other: Any?): Boolean =
+        other is ComplexityFactoryInlayHintsCollector && editor == other.editor
 
     override fun hashCode(): Int {
         return editor.hashCode()

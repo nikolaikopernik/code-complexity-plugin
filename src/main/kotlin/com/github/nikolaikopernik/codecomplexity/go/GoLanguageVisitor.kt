@@ -205,7 +205,7 @@ class GoLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
             }
         } else if (element is GoParenthesesExpr) {
             val next = element.getNextExpr()
-            if (next != null && next.parent != null) {
+            if (next?.parent != null) {
                 val parentCondition = next.parent.findParentConditionExpr(next)
                 val pointType = parentCondition?.pointType() ?: element.pointType()
                 sink.increaseComplexity(pointType)

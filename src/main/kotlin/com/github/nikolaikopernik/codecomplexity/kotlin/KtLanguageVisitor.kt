@@ -154,5 +154,5 @@ private fun KtToken.toPointType(): PointType =
 private fun PsiElement.findCurrentMethod(): KtNamedFunction? {
     var element: PsiElement? = this
     while (element != null && element !is KtNamedFunction) element = element.parent
-    return element?.let { it as KtNamedFunction }
+    return element
 }
