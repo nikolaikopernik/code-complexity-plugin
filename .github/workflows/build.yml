@@ -72,7 +72,7 @@ jobs:
 
       # Run tests
       - name: Run Tests
-        run: ./gradlew check
+        run: ./gradlew check koverXmlReport
 
       # Collect test reports and raw JUnit XML results
       - name: Collect Test Results
@@ -89,7 +89,7 @@ jobs:
       - name: Upload Code Coverage Report
         uses: codecov/codecov-action@v5
         with:
-          files: ${{ github.workspace }}/build/reports/kover/xml/report.xml
+          files: ${{ github.workspace }}/build/reports/kover/report.xml
 
       # Cache Plugin Verifier IDEs
       - name: Setup Plugin Verifier IDEs Cache

@@ -4,9 +4,11 @@
 # plugins
 kotlin = "2.4.0"
 changelog = "2.0.0"
+kover = "0.9.9"
 
 [libraries]
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
