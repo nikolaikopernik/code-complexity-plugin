@@ -3,17 +3,28 @@ package com.github.nikolaikopernik.codecomplexity
 import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
 import com.github.nikolaikopernik.codecomplexity.core.ElementVisitor
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.LightPlatformCodeInsightTestCase
 import java.io.File
 
 abstract class BaseComplexityTest : LightPlatformCodeInsightTestCase() {
-    fun checkAllFilesInFolder(path: String, extension: String = ".java") {
-        val tests = File(path).listFiles()
-            .filter { it.name.endsWith(extension) }
+    fun checkAllFilesInFolder(path: String, extension: String, expectedMethodCount: Int) {
+        val folder = File(path)
+        assertTrue("Test data folder not found: ${folder.absolutePath}", folder.isDirectory)
 
-        tests.map { "/${it.name}" }.forEach {
-            it.testAllMethodsInFile()
+        val tests = folder.listFiles().orEmpty().filter { it.name.endsWith(extension) }.sorted()
+        assertFalse("No *$extension files in ${folder.absolutePath}", tests.isEmpty())
+
+        val failures = mutableListOf<String>()
+        val checked = tests.sumOf { "/${it.name}".checkAllMethodsInFile(failures) }
+        if (checked != expectedMethodCount) {
+            failures += "Checked-method count for $path drifted: expected $expectedMethodCount, was $checked. " +
+                "Update expectedMethodCount if the test data changed, otherwise methods are being silently skipped."
+        }
+        if (failures.isNotEmpty()) {
+            fail("${failures.size} failure(s) in $path:\n" + failures.joinToString("\n"))
         }
     }
 
@@ -21,26 +32,33 @@ abstract class BaseComplexityTest : LightPlatformCodeInsightTestCase() {
         return super.getTestName(lowercaseFirstLetter).trim().replace(' ', '_')
     }
 
-    private fun String.testAllMethodsInFile() {
-        println()
+    /**
+     * Checks every parsed method in the file, appending mismatches to [failures] instead of
+     * failing fast, so one run reports them all. Returns the number of methods checked.
+     */
+    private fun String.checkAllMethodsInFile(failures: MutableList<String>): Int {
         configureByFile(this)
         val methods = parseTestFile(file)
+        val fileName = this.drop(1)
+        assertFalse("No annotated methods parsed from $fileName", methods.isEmpty())
 
-        methods.forEach { (element, name, complexity) ->
-            print("Checking method '$name()' in file ${this.drop(1)} file... ")
-            val sink = ComplexitySink().apply { element.accept(createLanguageElementVisitor(this)) }
-            assertEquals("Incorrect complexity calculated for method '$name()' in the file ${this.drop(1)}.\n" +
-                             "The following points have been seen by the sink: \n" + sink.getPoints()
-                .joinToString { it.toString() + '\n' },
-                         complexity,
-                         sink.getComplexity()
-            )
-            assertEquals("Incorrect nesting after processing method '$name()' in the file ${this.drop(1)}.",
-                         0,
-                         sink.getNesting()
-            )
-            println("OK")
+        // Expected scores must pin behaviour on valid code, not on a tree full of error elements.
+        PsiTreeUtil.findChildrenOfType(file, PsiErrorElement::class.java).forEach { error ->
+            val line = file.viewProvider.document!!.getLineNumber(error.textOffset) + 1
+            failures += "$fileName:$line: syntax error in test data: ${error.errorDescription}"
         }
+
+        methods.forEach { (element, name, expected) ->
+            val sink = ComplexitySink().apply { element.accept(createLanguageElementVisitor(this)) }
+            if (sink.getComplexity() != expected) {
+                failures += "$fileName#$name(): complexity expected $expected, got ${sink.getComplexity()}. Points:\n" +
+                    sink.getPoints().joinToString("\n") { "    $it" }.ifEmpty { "    (none)" }
+            }
+            if (sink.getNesting() != 0) {
+                failures += "$fileName#$name(): nesting expected 0, got ${sink.getNesting()}"
+            }
+        }
+        return methods.size
     }
 
     abstract fun createLanguageElementVisitor(sink: ComplexitySink): ElementVisitor

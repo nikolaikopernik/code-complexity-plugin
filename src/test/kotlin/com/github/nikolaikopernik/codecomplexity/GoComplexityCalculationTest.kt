@@ -34,6 +34,7 @@ import com.goide.sdk.GoBasedSdkVetoer
 import com.intellij.go.backend.GoBackendParserDefinition
 import com.intellij.go.frontback.api.GoElementTypeFactorySupplier
 import com.intellij.lang.LanguageParserDefinitions
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.extensions.ExtensionPoint
@@ -42,6 +43,7 @@ import com.intellij.openapi.extensions.ExtensionsArea
 import com.intellij.openapi.fileTypes.ExtensionFileNameMatcher
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiComment
@@ -52,12 +54,9 @@ import com.intellij.psi.impl.PsiTreeChangePreprocessor
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 import com.intellij.psi.util.childrenOfType
 import com.intellij.psi.util.descendants
-import com.intellij.testFramework.DisposableRule
 import com.intellij.testFramework.registerServiceInstance
 import com.intellij.testFramework.unregisterService
 import org.jdom.Element
-import org.junit.Rule
-import org.junit.Test
 
 private const val GO_TEST_FILES_PATH = "src/test/testData/go"
 
@@ -65,12 +64,12 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
 
     val goParserDefinition = GoBackendParserDefinition()
 
-    @get:Rule
-    val disposableRule = DisposableRule()
+    private lateinit var testDisposable: Disposable
 
     @Suppress("UnstableApiUsage")
     override fun setUp() {
         super.setUp()
+        testDisposable = Disposer.newDisposable("GoComplexityCalculationTest")
         Registry.getInstance().reset()
         Registry.loadState(registry {
             // to avoid test logger to fail
@@ -101,13 +100,19 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
             "com.goide.sdk.sdkVetoer",
             MockSdkVetoer::class.java.canonicalName ?: MockSdkVetoer::class.java.name
         )
-        ElementManipulators.INSTANCE.addExplicitExtension(GoStringLiteralImpl::class.java, GoStringManipulator(), disposableRule.disposable)
+        ElementManipulators.INSTANCE.addExplicitExtension(GoStringLiteralImpl::class.java, GoStringManipulator(), testDisposable)
 
         project.extensionArea.getExtensionPoint<PsiTreeChangePreprocessor>("com.intellij.psi.treeChangePreprocessor")
-            .registerExtension(GoPsiTreeChangeProcessor(), disposableRule.disposable)
+            .registerExtension(GoPsiTreeChangeProcessor(), testDisposable)
     }
 
+    @Suppress("UnstableApiUsage")
     override fun tearDown() {
+        Disposer.dispose(testDisposable)
+        // Drop this class's registry overrides for later suites; the empty loadState keeps
+        // the registry marked loaded (a bare reset() makes later key reads fail).
+        Registry.getInstance().reset()
+        Registry.loadState(registry {}, null)
         LanguageParserDefinitions.INSTANCE.removeExplicitExtension(GoLanguage.INSTANCE, goParserDefinition)
         val application = ApplicationManager.getApplication()
         application.runWriteAction {
@@ -119,10 +124,8 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
         super.tearDown()
     }
 
-    @Suppress("JUnitMixedFramework")
-    @Test
     fun testGoComplexity() {
-        checkAllFilesInFolder(GO_TEST_FILES_PATH, ".go")
+        checkAllFilesInFolder(GO_TEST_FILES_PATH, ".go", expectedMethodCount = 34)
     }
 
     override fun getTestDataPath() = GO_TEST_FILES_PATH

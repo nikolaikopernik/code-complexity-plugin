@@ -30,9 +30,8 @@ class DartComplexityInfoProvider(override val language: Language = DartLanguage.
         else -> false
     }
 
-    override fun isClassWithBody(element: PsiElement): Boolean {
-        if (element !is DartClassDefinition) return false
-        return PsiTreeUtil.findChildrenOfAnyType(
+    override fun isClassWithBody(element: PsiElement): Boolean =
+        element is DartClassDefinition && PsiTreeUtil.findChildrenOfAnyType(
             element,
             DartMethodDeclaration::class.java,
             DartGetterDeclaration::class.java,
@@ -40,7 +39,6 @@ class DartComplexityInfoProvider(override val language: Language = DartLanguage.
             DartFactoryConstructorDeclaration::class.java,
             DartNamedConstructorDeclaration::class.java
         ).any { isComplexitySuitableMember(it) }
-    }
 
     override fun getVisitor(sink: ComplexitySink): ElementVisitor = DartLanguageVisitor(sink)
 

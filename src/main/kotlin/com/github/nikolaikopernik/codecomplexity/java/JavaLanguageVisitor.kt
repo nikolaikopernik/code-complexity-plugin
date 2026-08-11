@@ -34,10 +34,13 @@ import com.intellij.psi.PsiMethodCallExpression
 import com.intellij.psi.PsiParenthesizedExpression
 import com.intellij.psi.PsiPolyadicExpression
 import com.intellij.psi.PsiPrefixExpression
-import com.intellij.psi.PsiSwitchStatement
+import com.intellij.psi.PsiSwitchBlock
 import com.intellij.psi.PsiWhileStatement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.IElementType
+import com.intellij.psi.tree.TokenSet
+
+private val LOGICAL_OPERATORS = TokenSet.create(JavaTokenType.ANDAND, JavaTokenType.OROR)
 
 class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     override fun processElement(element: PsiElement) {
@@ -56,7 +59,8 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
                 element.calculateBinaryComplexity()
             }
 
-            is PsiSwitchStatement -> sink.increaseComplexityAndNesting(SWITCH)
+            // PsiSwitchBlock covers both the statement and the Java 14+ expression form
+            is PsiSwitchBlock -> sink.increaseComplexityAndNesting(SWITCH)
             is PsiForStatement -> sink.increaseComplexityAndNesting(LOOP_FOR)
             is PsiForeachStatement -> sink.increaseComplexityAndNesting(LOOP_FOR)
             is PsiCatchSection -> sink.increaseComplexityAndNesting(CATCH)
@@ -80,7 +84,7 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
         var prevOperand: IElementType? = null
         this.children.forEach { element ->
             when (element) {
-                is PsiJavaToken -> if (element.tokenType in listOf(JavaTokenType.ANDAND, JavaTokenType.OROR)) {
+                is PsiJavaToken -> if (element.tokenType in LOGICAL_OPERATORS) {
                     if (prevOperand == null || element.tokenType != prevOperand) {
                         sink.increaseComplexity(element.tokenType.toPointType())
                     }
@@ -109,7 +113,7 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
             element is PsiForStatement ||
             element is PsiForeachStatement ||
             element is PsiCatchSection ||
-            element is PsiSwitchStatement ||
+            element is PsiSwitchBlock ||
             element is PsiLambdaExpression
         ) {
             sink.decreaseNesting()
@@ -131,7 +135,7 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
 
 /**
  * Checking if recursion is used.
- * Same problems as in [KtLanguageVisitor]
+ * Same problems as in [com.github.nikolaikopernik.codecomplexity.kotlin.KtLanguageVisitor]
  */
 private fun PsiMethodCallExpression.isRecursion(): Boolean {
     val parentMethod: PsiMethod = this.findCurrentMethod() ?: return false
@@ -143,7 +147,7 @@ private fun PsiMethodCallExpression.isRecursion(): Boolean {
 private fun PsiElement.findCurrentMethod(): PsiMethod? {
     var element: PsiElement? = this
     while (element != null && element !is PsiMethod) element = element.parent
-    return element?.let { it as PsiMethod }
+    return element
 }
 
 private fun PsiIfStatement.isElseIf(): Boolean =

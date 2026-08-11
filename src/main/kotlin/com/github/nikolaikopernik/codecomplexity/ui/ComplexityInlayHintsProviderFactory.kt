@@ -3,7 +3,6 @@ package com.github.nikolaikopernik.codecomplexity.ui
 import com.github.nikolaikopernik.codecomplexity.core.PLUGIN_EP_NAME
 import com.intellij.codeInsight.hints.InlayHintsProviderFactory
 import com.intellij.codeInsight.hints.ProviderInfo
-import com.intellij.openapi.project.Project
 
 
 @Suppress("UnstableApiUsage")

@@ -23,7 +23,7 @@ class HighCodeComplexityInspection : LocalInspectionTool() {
 
     /**
      * Check file fast in 2 steps:
-     *  - traverse all [PsiElement]s in breadth first order
+     *  - traverse all PSI elements in breadth first order
      *  - once any methods are found - calculate complexity for them
      */
     override fun checkFile(file: PsiFile, manager: InspectionManager, isOnTheFly: Boolean): Array<ProblemDescriptor> {

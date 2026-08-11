@@ -14,6 +14,40 @@ func NestedIf(vs []int) int {
 	}
 }
 
+//go:generate complexity 6
+func ifAfterElseIfChain(a int) int {
+	t := 0
+	if a > 0 { // +1
+		if a > 1 { // +1 (nested +1)
+			t++
+		} else if a > 2 { // +1
+			t++
+		}
+		if a > 3 { // +1 (nested +1), unaffected by the else-if chain above
+			t++
+		}
+	}
+	return t
+}
+
+//go:generate complexity 7
+func ifAfterTwoElseIfs(a int) int {
+	t := 0
+	if a > 0 { // +1
+		if a > 1 { // +1 (nested +1)
+			t++
+		} else if a > 2 { // +1
+			t++
+		} else if a > 3 { // +1
+			t++
+		}
+		if a > 4 { // +1 (nested +1), leaks must not compound
+			t++
+		}
+	}
+	return t
+}
+
 //go:generate complexity 8
 func labelBreak(m, n int, s ...int) {
 	for i := 0; i < m; i++ { //+1

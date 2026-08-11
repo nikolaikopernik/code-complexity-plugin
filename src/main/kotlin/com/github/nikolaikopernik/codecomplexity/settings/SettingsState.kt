@@ -11,7 +11,7 @@ const val DEFAULT_LIMIT_VERY_COMPLEX: Int = 12
 
 /**
  * This state holds the main settings for the plugin.
- * [ComplexitySettings.kt] just adds some functions to work with these settings.
+ * ComplexitySettings.kt just adds some functions to work with these settings.
  */
 @State(name = "com.github.nikolaikopernik.codecomplexity.settings.SettingsState",
        storages = [Storage("code-complexity-settings.xml")])

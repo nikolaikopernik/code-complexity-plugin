@@ -106,7 +106,7 @@ class Tests {
             }
             total += i;
         }
-        return total
+        return total;
     } // Cognitive Complexity 7
 
     @Complexity(1)
@@ -126,7 +126,7 @@ class Tests {
 
     @Nullable
     @Complexity(19)
-    private MethodJavaSymbol exampleSeven(classType:ClassJavaType) {
+    private MethodJavaSymbol exampleSeven(ClassJavaType classType) {
         if (classType.isUnknown()) {                   // +1
             return unknownMethodSymbol;
         }
@@ -186,9 +186,9 @@ class Tests {
             } else if (isSlash(ch)) {                  // +1
                 sb.append(escapedDirectorySeparator);
             } else {                                   // +1
-                sb.append(ch)
+                sb.append(ch);
             }
-            i++
+            i++;
         }
         sb.append('$');
         return sb.toString();
