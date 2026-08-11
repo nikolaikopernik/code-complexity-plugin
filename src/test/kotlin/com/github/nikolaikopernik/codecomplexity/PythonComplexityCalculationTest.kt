@@ -21,7 +21,6 @@ class PythonComplexityCalculationTest : BaseComplexityTest() {
     override fun createLanguageElementVisitor(sink: ComplexitySink): ElementVisitor = PythonComplexityInfoProvider().getVisitor(sink)
 
     override fun parseTestFile(file: PsiFile): List<Triple<PsiElement, String, Int>> {
-        //FIXME this code seems not working: returns NO function.
         val methods: List<PyFunction> = requireNotNull(file.getChildrenOfType<PyFunction>()).toList()
 
         return methods.map { method ->
