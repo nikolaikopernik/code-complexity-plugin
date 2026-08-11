@@ -11,13 +11,12 @@ import com.intellij.psi.util.PsiTreeUtil
  * Characterizes what the complexity caches do and do not absorb, which is the measured cause of
  * issue #30 ("editing a very large file consumes a lot of CPU and makes IDEA lag").
  *
- * Two separate problems, both pinned at today's behaviour rather than the behaviour we want:
- *  - [obtainElementComplexity] declares its dependency as `Result.create(sink, this)`, and a bare
- *    PsiElement resolves to file-level granularity, so one keystroke drops every method's score.
- *  - `getClassComplexity` has no caching at all, so every collector pass re-walks the class.
+ * [obtainElementComplexity] is fixed: it hashes the member's text, so a keystroke now recomputes only
+ * the member that changed. `getClassComplexity` still has no caching at all, so every collector pass
+ * re-walks the class, and that number stays pinned at today's behaviour.
  *
- * `InlayHintsPass` collects the Divider's inside *and* outside lists, so both costs are paid for
- * the whole file on every pass, not just for the visible part.
+ * `InlayHintsPass` collects the Divider's inside *and* outside lists, so whatever remains uncached is
+ * paid for the whole file on every pass, not just for the visible part.
  */
 class ComplexityCachingTest : BaseCorpusTest() {
 
@@ -31,7 +30,7 @@ class ComplexityCachingTest : BaseCorpusTest() {
                      METHOD_COUNT, after.count { (name, sink) -> sink === before[name] })
     }
 
-    fun testOneKeystrokeDropsEveryCachedScoreInTheFile() {
+    fun testOneKeystrokeOnlyRecomputesTheEditedMethod() {
         val methodsBefore = configureCorpus(METHOD_COUNT)
         val sinksBefore = methodsBefore.mapValues { (_, method) -> method.obtainElementComplexity() }
 
@@ -48,11 +47,35 @@ class ComplexityCachingTest : BaseCorpusTest() {
         assertEquals("a one-statement edit in one body must not replace any PsiMethod",
                      METHOD_COUNT, methodsAfter.count { (name, method) -> method === methodsBefore[name] })
 
-        // Only the edited method genuinely needs recomputing, so the target here is 1 and the
-        // other METHOD_COUNT - 1 are issue #30. Tighten this number when the cache dependency
-        // gets finer; never relax it.
+        // Only the edited method's text changed, so only its score may be rebuilt. This was
+        // METHOD_COUNT before the text hash landed, which is what made issue #30 bite. Never
+        // relax it: a larger number means invalidation went coarse again.
         assertEquals("blast radius of a single keystroke, in methods recomputed",
-                     METHOD_COUNT, sinksAfter.count { (name, sink) -> sink !== sinksBefore[name] })
+                     1, sinksAfter.count { (name, sink) -> sink !== sinksBefore[name] })
+        assertTrue("the recomputed method must be the edited one",
+                   sinksAfter.entries.single { (name, sink) -> sink !== sinksBefore[name] }
+                       .key == methodsBefore.keys.last())
+    }
+
+    /**
+     * The risk the text hash introduces: if it missed a change, the edited method would keep serving
+     * its old score for good. So assert the new value, not just that something was recomputed.
+     */
+    fun testEditedMethodPicksUpItsNewScore() {
+        val methodsBefore = configureCorpus(METHOD_COUNT)
+        val editedName = methodsBefore.keys.last()
+        val scoresBefore = methodsBefore.mapValues { (_, m) -> m.obtainElementComplexity().getComplexity() }
+
+        // One more top-level `if` in the last method, worth exactly one point at nesting 0.
+        myFixture.type("if (a > 0) { }")
+        PsiDocumentManager.getInstance(project).commitAllDocuments()
+
+        val scoresAfter = findMethodsByName().mapValues { (_, m) -> m.obtainElementComplexity().getComplexity() }
+
+        assertEquals("the edited method must score one higher",
+                     scoresBefore.getValue(editedName) + 1, scoresAfter.getValue(editedName))
+        assertEquals("every untouched method must keep the score it had",
+                     scoresBefore - editedName, scoresAfter - editedName)
     }
 
     fun testClassWalkRepeatsWhileItsMembersStayCached() {

@@ -13,11 +13,12 @@ import com.intellij.codeInsight.hints.presentation.InlayPresentation
 import com.intellij.codeInsight.hints.presentation.WithAttributesPresentation
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors.INLAY_TEXT_WITHOUT_BACKGROUND
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.util.Key
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiRecursiveElementVisitor
-import com.intellij.psi.util.CachedValueProvider
-import com.intellij.psi.util.CachedValuesManager
 import org.jetbrains.annotations.VisibleForTesting
+import java.lang.ref.SoftReference
 
 @Suppress("UnstableApiUsage")
 class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: ComplexityInfoProvider,
@@ -104,17 +105,59 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
     }
 }
 
+private val COMPLEXITY_KEY = Key.create<SoftReference<CachedComplexity>>("code.complexity.cachedSink")
+
+private class CachedComplexity(val textHash: Long, val sink: ComplexitySink)
+
 /**
  * Cached version of complexity.
  * Use this one as it speeds up the calculations.
+ *
+ * The score is kept on the element and guarded by a hash of its text, because a member's complexity
+ * is a pure function of that text: the visitors are pure syntax, and even the recursion checks only
+ * compare names and counts within the enclosing member. So an edit anywhere else cannot change it.
+ *
+ * A [com.intellij.psi.util.CachedValuesManager] dependency could not express that. A PsiElement
+ * dependency resolves to the containing file's modification stamp, so a single keystroke dropped
+ * every member's score in the file and the editor recomputed all of them. See issue #30.
  */
 fun PsiElement.obtainElementComplexity(givenProvider: ComplexityInfoProvider? = null): ComplexitySink {
-    return CachedValuesManager.getCachedValue(this) {
-        // Search for the first provider with the same language on every recompute,
-        // so there is no dependency on the reference to that provider.
-        val provider = givenProvider ?: this.findProviderForElement()
-        val sink = ComplexitySink()
-        this.accept(provider.getVisitor(sink))
-        CachedValueProvider.Result.create(sink, this)
+    val textHash = hashOfCommittedText()
+    if (textHash != null) {
+        getUserData(COMPLEXITY_KEY)?.get()?.let { if (it.textHash == textHash) return it.sink }
     }
+
+    // Search for the first provider with the same language on every recompute,
+    // so there is no dependency on the reference to that provider.
+    val provider = givenProvider ?: this.findProviderForElement()
+    val sink = ComplexitySink()
+    this.accept(provider.getVisitor(sink))
+
+    // Soft, which is what CachedValuesManager did with it, so these stay reclaimable.
+    if (textHash != null) putUserData(COMPLEXITY_KEY, SoftReference(CachedComplexity(textHash, sink)))
+    return sink
 }
+
+/**
+ * FNV-1a over this element's characters, read straight from the document so no string is built, with
+ * the length mixed in so two different texts have to collide on both.
+ *
+ * Null when no committed document backs the element: hashing text the PSI does not match yet would
+ * cache a score against the wrong fingerprint, so the caller recomputes instead of risking that.
+ */
+private fun PsiElement.hashOfCommittedText(): Long? {
+    val document = containingFile?.viewProvider?.document ?: return null
+    if (!PsiDocumentManager.getInstance(project).isCommitted(document)) return null
+    val range = textRange
+    if (range == null || range.endOffset > document.textLength) return null
+
+    val chars = document.charsSequence
+    var hash = FNV_BASIS
+    for (i in range.startOffset until range.endOffset) {
+        hash = (hash xor chars[i].code.toLong()) * FNV_PRIME
+    }
+    return (hash xor range.length.toLong()) * FNV_PRIME
+}
+
+private const val FNV_BASIS = -0x340d631b7bdddcdbL
+private const val FNV_PRIME = 0x100000001b3L

@@ -44,10 +44,10 @@ class ComplexityBenchmark : BaseCorpusTest() {
             // The floor a finer cache dependency is aiming at: same walk, all hits.
             measure("warm-cache lookup") { methods.forEach { it.obtainElementComplexity() } },
 
-            // Batch Inspect Code, the path opted-in users pay (the inspection ships
-            // enabledByDefault="false"). Each file is visited once, so nothing damps the
-            // visitors' per-node cost; this is the number that would justify optimising it.
-            measure("batch inspection, cold", setup = ::invalidateAllScores) {
+            // The inspection path, re-run after an edit. NOT representative of batch Inspect Code:
+            // setup invalidates one member, so the rest still answer from cache. A true cold-file
+            // number needs a corpus setup that does not warm the scores, which this does not have.
+            measure("inspection after one edit", setup = ::invalidateAllScores) {
                 inspection.checkFile(myFixture.file, manager, false)
             },
         )
@@ -95,8 +95,9 @@ class ComplexityBenchmark : BaseCorpusTest() {
             appendLine("| ${it.name} | ${ms(it.median)} | ${ms(it.min)} | ${ms(it.max)} |")
         }
         appendLine()
-        appendLine("Cold/warm ratio: **${"%.0f".format(cold.median / warm.median)}x**. That multiple is what")
-        appendLine("a finer cache dependency stands to remove from every keystroke in a file this size.")
+        appendLine("Cold/warm ratio: **${"%.1f".format(cold.median / warm.median)}x**. Lower is better here:")
+        appendLine("it says how much more a keystroke costs than doing nothing. It was 30x before the")
+        appendLine("text-hash guard landed, because every member in the file was recomputed.")
         appendLine()
         appendLine("Re-run with `./gradlew test -Pbenchmarks`. Machine-specific: compare only against")
         appendLine("numbers taken on the same machine in the same session.")
