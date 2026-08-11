@@ -124,7 +124,7 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
     }
 
     fun testGoComplexity() {
-        checkAllFilesInFolder(GO_TEST_FILES_PATH, ".go", expectedMethodCount = 32)
+        checkAllFilesInFolder(GO_TEST_FILES_PATH, ".go", expectedMethodCount = 34)
     }
 
     override fun getTestDataPath() = GO_TEST_FILES_PATH

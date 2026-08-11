@@ -216,12 +216,17 @@ class GoLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     }
 
     override fun postProcess(element: PsiElement) {
+        // Each branch mirrors the guard processElement used to increase nesting: an `else if` and a
+        // member/var-declaration function literal never increase, so they must not decrease either.
         when (element) {
+            is GoIfStatement -> if (element.parent !is GoElseStatement) sink.decreaseNesting()
+            is GoFunctionLit -> if (!element.isMemberFunction() && !element.isToplevelVarDeclFunction()) {
+                sink.decreaseNesting()
+            }
+
             is GoForStatement,
-            is GoIfStatement,
             is GoSwitchStatement,
-            is GoSelectStatement,
-            is GoFunctionLit -> sink.decreaseNesting()
+            is GoSelectStatement -> sink.decreaseNesting()
         }
     }
 
