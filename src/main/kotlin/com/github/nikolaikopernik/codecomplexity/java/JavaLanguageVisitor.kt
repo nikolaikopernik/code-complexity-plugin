@@ -34,7 +34,7 @@ import com.intellij.psi.PsiMethodCallExpression
 import com.intellij.psi.PsiParenthesizedExpression
 import com.intellij.psi.PsiPolyadicExpression
 import com.intellij.psi.PsiPrefixExpression
-import com.intellij.psi.PsiSwitchStatement
+import com.intellij.psi.PsiSwitchBlock
 import com.intellij.psi.PsiWhileStatement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.IElementType
@@ -56,7 +56,8 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
                 element.calculateBinaryComplexity()
             }
 
-            is PsiSwitchStatement -> sink.increaseComplexityAndNesting(SWITCH)
+            // PsiSwitchBlock covers both the statement and the Java 14+ expression form
+            is PsiSwitchBlock -> sink.increaseComplexityAndNesting(SWITCH)
             is PsiForStatement -> sink.increaseComplexityAndNesting(LOOP_FOR)
             is PsiForeachStatement -> sink.increaseComplexityAndNesting(LOOP_FOR)
             is PsiCatchSection -> sink.increaseComplexityAndNesting(CATCH)
@@ -109,7 +110,7 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
             element is PsiForStatement ||
             element is PsiForeachStatement ||
             element is PsiCatchSection ||
-            element is PsiSwitchStatement ||
+            element is PsiSwitchBlock ||
             element is PsiLambdaExpression
         ) {
             sink.decreaseNesting()
