@@ -21,6 +21,7 @@ import com.jetbrains.python.psi.PyForStatement
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.PyIfPart
 import com.jetbrains.python.psi.PyLambdaExpression
+import com.jetbrains.python.psi.PyMatchStatement
 import com.jetbrains.python.psi.PyParenthesizedExpression
 import com.jetbrains.python.psi.PyPrefixExpression
 import com.jetbrains.python.psi.PyTryExceptStatement
@@ -30,6 +31,8 @@ internal class PythonLanguageVisitor(private val sink: ComplexitySink) : Element
     override fun processElement(element: PsiElement) {
         when (element) {
             is PyWhileStatement -> sink.increaseComplexityAndNesting(PointType.LOOP_WHILE)
+            // `match` scores like a switch: one point for the statement, none per `case`
+            is PyMatchStatement -> sink.increaseComplexityAndNesting(PointType.SWITCH)
             is PyIfPart -> sink.increaseComplexityAndNesting(PointType.IF)
             is PyElsePart -> sink.increaseComplexity(PointType.ELSE)
             is PyForStatement -> sink.increaseComplexityAndNesting(PointType.LOOP_FOR)
@@ -52,6 +55,7 @@ internal class PythonLanguageVisitor(private val sink: ComplexitySink) : Element
         // No PyTryExceptStatement here: `try` itself never increases nesting, and decreasing
         // for it left every following sibling one level too shallow.
         if (element is PyWhileStatement ||
+            element is PyMatchStatement ||
             element is PyIfPart ||
             element is PyForStatement ||
             element is PyExceptPart ||
