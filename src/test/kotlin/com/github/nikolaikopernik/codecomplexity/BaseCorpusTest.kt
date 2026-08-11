@@ -1,6 +1,8 @@
 package com.github.nikolaikopernik.codecomplexity
 
-import com.github.nikolaikopernik.codecomplexity.ui.obtainElementComplexity
+import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
+import com.github.nikolaikopernik.codecomplexity.java.JavaLanguageVisitor
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.util.PsiTreeUtil
@@ -23,7 +25,9 @@ abstract class BaseCorpusTest : BasePlatformTestCase() {
         assertEquals("generated methods must all be found and uniquely named", methodCount, methods.size)
 
         // A degenerate corpus would let a caller's assertions pass without measuring anything.
-        val scores = methods.values.map { it.obtainElementComplexity().getComplexity() }.distinct()
+        // Scored through the visitor directly, so this guard stays independent of the cache under
+        // test and leaves it cold.
+        val scores = methods.values.map { visitorScoreOf(it) }.distinct()
         assertEquals("generated methods must all score alike, got $scores", 1, scores.size)
         assertTrue("generated methods must score above zero", scores.single() > 0)
 
@@ -32,6 +36,10 @@ abstract class BaseCorpusTest : BasePlatformTestCase() {
 
     protected fun findMethodsByName(): Map<String, PsiMethod> =
         PsiTreeUtil.findChildrenOfType(myFixture.file, PsiMethod::class.java).associateBy { it.name }
+
+    /** Uncached score, straight through the visitor. */
+    protected fun visitorScoreOf(element: PsiElement): Int =
+        ComplexitySink().also { element.accept(JavaLanguageVisitor(it)) }.getComplexity()
 
     private fun generateClass(methodCount: Int): String = buildString {
         appendLine("class Big {")

@@ -52,6 +52,10 @@ class ComplexityBenchmark : BaseCorpusTest() {
                 invalidateAllScores()
                 psiClass = findClass()
             }) { collector.getClassComplexity(psiClass) },
+
+            // Cache bypassed: the raw visitor cost every cold file and every edited member pays.
+            // This is what optimising the visitors' per-token allocations would move.
+            measure("visitor walk, uncached") { methods.forEach { visitorScoreOf(it) } },
         )
 
         report(rows).let { text ->
