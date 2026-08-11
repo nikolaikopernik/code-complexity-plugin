@@ -38,6 +38,9 @@ import com.intellij.psi.PsiSwitchBlock
 import com.intellij.psi.PsiWhileStatement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.IElementType
+import com.intellij.psi.tree.TokenSet
+
+private val LOGICAL_OPERATORS = TokenSet.create(JavaTokenType.ANDAND, JavaTokenType.OROR)
 
 class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     override fun processElement(element: PsiElement) {
@@ -81,7 +84,7 @@ class JavaLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
         var prevOperand: IElementType? = null
         this.children.forEach { element ->
             when (element) {
-                is PsiJavaToken -> if (element.tokenType in listOf(JavaTokenType.ANDAND, JavaTokenType.OROR)) {
+                is PsiJavaToken -> if (element.tokenType in LOGICAL_OPERATORS) {
                     if (prevOperand == null || element.tokenType != prevOperand) {
                         sink.increaseComplexity(element.tokenType.toPointType())
                     }

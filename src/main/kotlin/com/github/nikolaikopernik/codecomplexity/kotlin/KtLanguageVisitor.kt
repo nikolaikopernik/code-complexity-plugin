@@ -27,6 +27,13 @@ import org.jetbrains.kotlin.psi.KtValueArgumentList
 import org.jetbrains.kotlin.psi.KtWhenExpression
 import org.jetbrains.kotlin.psi.KtWhileExpression
 
+private val LOGICAL_OPERATORS = TokenSet.create(
+    KtTokens.ANDAND,
+    KtTokens.OROR,
+    // elvis is a null-check decision, scored as a sequence like Dart's ??
+    KtTokens.ELVIS
+)
+
 class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     override fun processElement(element: PsiElement) {
         when (element) {
@@ -94,7 +101,7 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
         var prevOperand = prevToken
         this.children.forEach { element ->
             when (element) {
-                is KtOperationReferenceExpression -> if (element.operationSignTokenType != null && element.operationSignTokenType in (getLogicalOperationsTokens())) {
+                is KtOperationReferenceExpression -> if (element.operationSignTokenType != null && element.operationSignTokenType in LOGICAL_OPERATORS) {
                     if (prevOperand == null || element.operationSignTokenType != prevOperand) {
                         sink.increaseComplexity(element.operationSignTokenType!!.toPointType())
                     }
@@ -110,15 +117,6 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
             }
         }
         return prevOperand
-    }
-
-    private fun getLogicalOperationsTokens(): TokenSet {
-        return TokenSet.create(
-            KtTokens.ANDAND,
-            KtTokens.OROR,
-            // elvis is a null-check decision, scored as a sequence like Dart's ??
-            KtTokens.ELVIS
-        )
     }
 
     /**

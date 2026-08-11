@@ -8,6 +8,7 @@ import com.github.nikolaikopernik.codecomplexity.core.ElementVisitor
 import com.github.nikolaikopernik.codecomplexity.core.PointType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
+import com.intellij.psi.tree.TokenSet
 import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.psi.PyBinaryExpression
 import com.jetbrains.python.psi.PyBreakStatement
@@ -26,6 +27,8 @@ import com.jetbrains.python.psi.PyMatchStatement
 import com.jetbrains.python.psi.PyParenthesizedExpression
 import com.jetbrains.python.psi.PyPrefixExpression
 import com.jetbrains.python.psi.PyWhileStatement
+
+private val LOGICAL_OPERATORS = TokenSet.create(PyTokenTypes.AND_KEYWORD, PyTokenTypes.OR_KEYWORD)
 
 internal class PythonLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     override fun processElement(element: PsiElement) {
@@ -88,7 +91,7 @@ internal class PythonLanguageVisitor(private val sink: ComplexitySink) : Element
 
         elements.forEach { element ->
             when (element) {
-                is PyElementType -> if (element in listOf(PyTokenTypes.AND_KEYWORD, PyTokenTypes.OR_KEYWORD)) {
+                is PyElementType -> if (element in LOGICAL_OPERATORS) {
                     if (operands.lastOrNull() == null || element != operands.lastOrNull()) {
                         sink.increaseComplexity(element.toPointType())
                     }
