@@ -7,13 +7,13 @@ import com.github.nikolaikopernik.codecomplexity.settings.SettingsState
 import com.github.nikolaikopernik.codecomplexity.settings.getConfiguredLevel
 import com.github.nikolaikopernik.codecomplexity.settings.getConfiguredText
 import com.github.nikolaikopernik.codecomplexity.settings.getValueToShow
-import com.intellij.testFramework.LightPlatformTestCase
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 /**
  * Characterization tests for the settings math in ComplexitySettings.kt: they pin current
  * behaviour, quirks included, ahead of refactors. Deliberate behaviour changes update them.
  */
-class ComplexitySettingsTest : LightPlatformTestCase() {
+class ComplexitySettingsTest : BasePlatformTestCase() {
     private lateinit var saved: SettingsState
 
     override fun setUp() {
