@@ -1,31 +1,24 @@
 package com.github.nikolaikopernik.codecomplexity
 
 import com.github.nikolaikopernik.codecomplexity.core.HighCodeComplexityInspection
+import com.github.nikolaikopernik.codecomplexity.java.JavaComplexityInfoProvider
+import com.github.nikolaikopernik.codecomplexity.ui.ComplexityFactoryInlayHintsCollector
 import com.github.nikolaikopernik.codecomplexity.ui.obtainElementComplexity
 import com.intellij.codeInspection.InspectionManager
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.util.PsiTreeUtil
 import java.io.File
 import kotlin.system.measureNanoTime
 
 /**
- * Baseline timings for issue #30. Advisory only: nothing here asserts, because CI runners are too
- * noisy for a timing threshold and there is nowhere to keep a baseline. The gates live in
- * [ComplexityCachingTest], which counts recomputations instead of timing them.
+ * Advisory timings for issue #30; nothing here asserts. Gates live in [ComplexityCachingTest].
+ * Excluded from `test` by a `*Benchmark` filter; run with `./gradlew test -Pbenchmarks`.
  *
- * Excluded from `test` by a `*Benchmark` name filter; run with `./gradlew test -Pbenchmarks`.
- *
- * Hand-rolled rather than using the platform's `Benchmark` API on purpose. That harness starts a JFR
- * recording per attempt, roughly 30 ms of floor against work that takes 0.4 ms warm: measured
- * side by side it reported a cold/warm ratio of 1.2x where the real one is 63x. Its one attraction,
- * `runAsStressTest()`, only sets the deprecated `ApplicationManagerEx.setInStressTest`.
- *
- * So these run in ordinary test mode with the platform's debug assertions left on, which makes every
- * number an upper bound. That is the right trade for tracking a delta, since before and after are
- * measured identically.
- *
- * Scope note: this times the complexity computation, not a full inlay-hints pass. The platform's
- * traversal cannot be reproduced from a test, so method discovery stays in setup, outside the timing.
+ * Hand-rolled rather than the platform's `Benchmark` API: that harness's per-attempt JFR recording
+ * (~30 ms floor) swamped work that takes 0.4 ms warm, reporting a 1.2x ratio where the real one is
+ * 63x. Times the complexity computation only, not a full inlay-hints pass.
  */
 class ComplexityBenchmark : BaseCorpusTest() {
 
@@ -33,6 +26,8 @@ class ComplexityBenchmark : BaseCorpusTest() {
         var methods: Collection<PsiMethod> = configureCorpus(CORPUS_METHODS).values
         val manager = InspectionManager.getInstance(project)
         val inspection = HighCodeComplexityInspection()
+        val collector = ComplexityFactoryInlayHintsCollector(JavaComplexityInfoProvider(), myFixture.editor)
+        var psiClass = findClass()
 
         val rows = listOf(
             // What one keystroke costs today: every score rebuilt from scratch.
@@ -44,12 +39,19 @@ class ComplexityBenchmark : BaseCorpusTest() {
             // The floor a finer cache dependency is aiming at: same walk, all hits.
             measure("warm-cache lookup") { methods.forEach { it.obtainElementComplexity() } },
 
-            // The inspection path, re-run after an edit. NOT representative of batch Inspect Code:
-            // setup invalidates one member, so the rest still answer from cache. A true cold-file
-            // number needs a corpus setup that does not warm the scores, which this does not have.
+            // NOT batch Inspect Code: setup invalidates one member, the rest answer from cache.
             measure("inspection after one edit", setup = ::invalidateAllScores) {
                 inspection.checkFile(myFixture.file, manager, false)
             },
+
+            // The class-level aggregate. Repeated collector passes happen on an unchanged file
+            // whenever the daemon restarts, so this is the one worth making free.
+            measure("class walk, unchanged file") { collector.getClassComplexity(psiClass) },
+
+            measure("class walk, after one edit", setup = {
+                invalidateAllScores()
+                psiClass = findClass()
+            }) { collector.getClassComplexity(psiClass) },
         )
 
         report(rows).let { text ->
@@ -69,14 +71,13 @@ class ComplexityBenchmark : BaseCorpusTest() {
         return Row(name, samples.drop(WARMUPS).sorted())
     }
 
-    /**
-     * Types a space, which the cache treats as a whole-file change (see [ComplexityCachingTest]), so
-     * the next attempt starts cold. A space rather than a statement keeps the corpus shape stable.
-     */
+    /** A space, not a statement, so it invalidates without changing the corpus's scores. */
     private fun invalidateAllScores() {
         myFixture.type(" ")
         PsiDocumentManager.getInstance(project).commitAllDocuments()
     }
+
+    private fun findClass(): PsiClass = PsiTreeUtil.findChildOfType(myFixture.file, PsiClass::class.java)!!
 
     private fun report(rows: List<Row>): String = buildString {
         val cold = rows.first { it.name.startsWith("cold") }
@@ -103,7 +104,8 @@ class ComplexityBenchmark : BaseCorpusTest() {
         appendLine("numbers taken on the same machine in the same session.")
     }
 
-    private fun ms(value: Double) = "${"%.2f".format(value)} ms"
+    // "0.00 ms" reads as a broken measurement rather than as free.
+    private fun ms(value: Double) = if (value < 0.01) "<0.01 ms" else "${"%.2f".format(value)} ms"
 
     private class Row(val name: String, private val sorted: List<Double>) {
         val median get() = sorted[sorted.size / 2]

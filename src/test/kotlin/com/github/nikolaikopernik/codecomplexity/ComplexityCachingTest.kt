@@ -8,15 +8,8 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.util.PsiTreeUtil
 
 /**
- * Characterizes what the complexity caches do and do not absorb, which is the measured cause of
- * issue #30 ("editing a very large file consumes a lot of CPU and makes IDEA lag").
- *
- * [obtainElementComplexity] is fixed: it hashes the member's text, so a keystroke now recomputes only
- * the member that changed. `getClassComplexity` still has no caching at all, so every collector pass
- * re-walks the class, and that number stays pinned at today's behaviour.
- *
- * `InlayHintsPass` collects the Divider's inside *and* outside lists, so whatever remains uncached is
- * paid for the whole file on every pass, not just for the visible part.
+ * Guards the complexity caches against regressing back to file-level invalidation (issue #30:
+ * editing a large file made IDEA lag).
  */
 class ComplexityCachingTest : BaseCorpusTest() {
 
@@ -41,15 +34,11 @@ class ComplexityCachingTest : BaseCorpusTest() {
         val methodsAfter = findMethodsByName()
         val sinksAfter = methodsAfter.mapValues { (_, method) -> method.obtainElementComplexity() }
 
-        // The incremental reparse keeps every PsiMethod instance, so no miss below is the
-        // platform's doing. If this ever drops, the corpus or the reparser changed, and the
-        // recompute count stops being attributable to us.
+        // Confirms any miss below is ours, not the incremental reparser's.
         assertEquals("a one-statement edit in one body must not replace any PsiMethod",
                      METHOD_COUNT, methodsAfter.count { (name, method) -> method === methodsBefore[name] })
 
-        // Only the edited method's text changed, so only its score may be rebuilt. This was
-        // METHOD_COUNT before the text hash landed, which is what made issue #30 bite. Never
-        // relax it: a larger number means invalidation went coarse again.
+        // Was METHOD_COUNT before the text hash landed (issue #30). Never relax this back up.
         assertEquals("blast radius of a single keystroke, in methods recomputed",
                      1, sinksAfter.count { (name, sink) -> sink !== sinksBefore[name] })
         assertTrue("the recomputed method must be the edited one",
@@ -57,10 +46,7 @@ class ComplexityCachingTest : BaseCorpusTest() {
                        .key == methodsBefore.keys.last())
     }
 
-    /**
-     * The risk the text hash introduces: if it missed a change, the edited method would keep serving
-     * its old score for good. So assert the new value, not just that something was recomputed.
-     */
+    /** Guards against the hash missing a real change and serving a stale score forever. */
     fun testEditedMethodPicksUpItsNewScore() {
         val methodsBefore = configureCorpus(METHOD_COUNT)
         val editedName = methodsBefore.keys.last()
@@ -78,31 +64,47 @@ class ComplexityCachingTest : BaseCorpusTest() {
                      scoresBefore - editedName, scoresAfter - editedName)
     }
 
-    fun testClassWalkRepeatsWhileItsMembersStayCached() {
+    fun testClassWalkIsReusedWhileTheFileIsUnchanged() {
         val methods = configureCorpus(METHOD_COUNT)
-        val psiClass = PsiTreeUtil.findChildOfType(myFixture.file, PsiClass::class.java)!!
-        val collector = ComplexityFactoryInlayHintsCollector(JavaComplexityInfoProvider(), myFixture.editor)
+        val collector = collector()
+        val psiClass = findClass()
 
         val first = collector.getClassComplexity(psiClass)
         val membersAfterFirst = methods.mapValues { (_, method) -> method.obtainElementComplexity() }
         val second = collector.getClassComplexity(psiClass)
         val membersAfterSecond = methods.mapValues { (_, method) -> method.obtainElementComplexity() }
 
-        // Repeated walks must agree, whether or not the walk ever gets cached.
-        assertEquals("repeated class walks must produce the same score", first.getComplexity(), second.getComplexity())
         assertTrue("class score must be above zero", second.getComplexity() > 0)
         assertEquals("every member must contribute one point, so the walk covers the whole class",
                      METHOD_COUNT, second.getPoints().size)
 
-        // The member cache is what keeps the repeat cheap: the second walk re-visits the tree but
-        // must not recompute any member. Losing this would multiply the cost of every pass.
-        assertEquals("a repeated class walk must not recompute any member",
+        // The member cache keeps a walk cheap even when one does happen. Losing this would
+        // multiply the cost of every pass by the member count.
+        assertEquals("a class walk must not recompute any member whose text is unchanged",
                      METHOD_COUNT, membersAfterSecond.count { (name, sink) -> sink === membersAfterFirst[name] })
 
-        // The walk itself is thrown away every time, so each collector pass pays the traversal of
-        // the entire class. Target is one shared instance; flip this to assertSame once cached.
-        assertNotSame("class-level complexity is recomputed rather than cached", first, second)
+        // Every collector pass used to re-walk the whole class. Daemon restarts make that happen on
+        // files nobody edited, so the repeat is now free. Never loosen this back to assertNotSame.
+        assertSame("an unchanged file must reuse the class-level sink", first, second)
     }
+
+    /** The class score is a sum over members, so it has to move when a member's does. */
+    fun testClassScoreUpdatesAfterAnEdit() {
+        configureCorpus(METHOD_COUNT)
+        val collector = collector()
+        val before = collector.getClassComplexity(findClass()).getComplexity()
+
+        myFixture.type("if (a > 0) { }")
+        PsiDocumentManager.getInstance(project).commitAllDocuments()
+
+        assertEquals("one more point in one member must show up in the class total",
+                     before + 1, collector.getClassComplexity(findClass()).getComplexity())
+    }
+
+    private fun collector() =
+        ComplexityFactoryInlayHintsCollector(JavaComplexityInfoProvider(), myFixture.editor)
+
+    private fun findClass() = PsiTreeUtil.findChildOfType(myFixture.file, PsiClass::class.java)!!
 
     private companion object {
         /** Small enough to stay fast, large enough that whole-file and one-method can't be confused. */

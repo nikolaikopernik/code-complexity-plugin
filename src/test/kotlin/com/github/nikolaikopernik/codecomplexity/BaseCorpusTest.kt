@@ -7,19 +7,12 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 /**
- * Generates the Java corpus shared by the caching tests and the benchmarks: one class of
- * uniformly-shaped, uniquely-named methods, with a caret in the last one so typing there shifts no
- * earlier offsets.
- *
- * Generated rather than committed, which keeps the size a parameter and leaves `src/test/testData`
- * matching the `inputs.dir` declaration in build.gradle.kts.
+ * Generates the Java corpus shared by the caching tests and benchmarks: one class of
+ * uniformly-shaped, uniquely-named methods, caret in the last one so edits shift no earlier offsets.
  */
 abstract class BaseCorpusTest : BasePlatformTestCase() {
 
-    /**
-     * Configures a corpus of [methodCount] methods and returns them by name. Names survive a
-     * reparse, so they are what lets a before/after comparison line up.
-     */
+    /** Configures a corpus of [methodCount] methods, returned by name so before/after can line up. */
     protected fun configureCorpus(methodCount: Int): Map<String, PsiMethod> {
         myFixture.configureByText("Big.java", generateClass(methodCount))
 

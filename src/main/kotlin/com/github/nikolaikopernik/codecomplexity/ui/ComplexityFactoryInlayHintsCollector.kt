@@ -17,6 +17,8 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiRecursiveElementVisitor
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
 import org.jetbrains.annotations.VisibleForTesting
 import java.lang.ref.SoftReference
 
@@ -25,9 +27,14 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
                                            private val editor: Editor) : FactoryInlayHintsCollector(editor) {
     private val setting: SettingsState = SettingsState.INSTANCE
 
+    /**
+     * File-stamp cache, unlike [obtainElementComplexity]'s text hash: a class's score depends on
+     * all its members, so hashing it would cost as much as the walk it saves.
+     */
     @VisibleForTesting
     internal fun getClassComplexity(element: PsiElement): ComplexitySink {
-        return ComplexitySink().also { sink ->
+        return CachedValuesManager.getCachedValue(element) {
+            val sink = ComplexitySink()
             element.accept(object : PsiRecursiveElementVisitor() {
                 override fun visitElement(element: PsiElement) {
                     if (complexityInfoProvider.isComplexitySuitableMember(element)) {
@@ -37,6 +44,7 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
                     }
                 }
             })
+            CachedValueProvider.Result.create(sink, element)
         }
     }
 
@@ -110,16 +118,9 @@ private val COMPLEXITY_KEY = Key.create<SoftReference<CachedComplexity>>("code.c
 private class CachedComplexity(val textHash: Long, val sink: ComplexitySink)
 
 /**
- * Cached version of complexity.
- * Use this one as it speeds up the calculations.
- *
- * The score is kept on the element and guarded by a hash of its text, because a member's complexity
- * is a pure function of that text: the visitors are pure syntax, and even the recursion checks only
- * compare names and counts within the enclosing member. So an edit anywhere else cannot change it.
- *
- * A [com.intellij.psi.util.CachedValuesManager] dependency could not express that. A PsiElement
- * dependency resolves to the containing file's modification stamp, so a single keystroke dropped
- * every member's score in the file and the editor recomputed all of them. See issue #30.
+ * Cached version of complexity, keyed to a hash of the element's own text rather than the file's
+ * modification stamp: a member's score only depends on its own text, and file-stamp caching made
+ * one keystroke recompute every member in the file (issue #30).
  */
 fun PsiElement.obtainElementComplexity(givenProvider: ComplexityInfoProvider? = null): ComplexitySink {
     val textHash = hashOfCommittedText()
@@ -139,11 +140,8 @@ fun PsiElement.obtainElementComplexity(givenProvider: ComplexityInfoProvider? = 
 }
 
 /**
- * FNV-1a over this element's characters, read straight from the document so no string is built, with
- * the length mixed in so two different texts have to collide on both.
- *
- * Null when no committed document backs the element: hashing text the PSI does not match yet would
- * cache a score against the wrong fingerprint, so the caller recomputes instead of risking that.
+ * FNV-1a over this element's characters, read straight from the document to avoid building a string.
+ * Null if the document isn't committed yet, so the caller recomputes instead of hashing stale text.
  */
 private fun PsiElement.hashOfCommittedText(): Long? {
     val document = containingFile?.viewProvider?.document ?: return null
