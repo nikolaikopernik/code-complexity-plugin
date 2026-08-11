@@ -1,0 +1,13 @@
+version: "1.0"
+
+linter: qodana-jvm-community
+
+profile:
+  name: qodana.recommended
+
+exclude:
+  - name: All
+    paths:
+      # Fixtures are deliberately odd (unresolved symbols, `if (n = 1)`, tiny snippets): will have too much noise
+      - src/test/testData
+      - .qodana

@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.kotlin) // Kotlin support
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.kover) // Coverage, uploaded to CodeCov by the build workflow
+    alias(libs.plugins.qodana) // Qodana static analysis (see .run/Run Qodana)
 }
 
 group = providers.gradleProperty("pluginGroup").get()
