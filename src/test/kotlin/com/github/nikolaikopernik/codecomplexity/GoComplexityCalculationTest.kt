@@ -106,6 +106,7 @@ class GoComplexityCalculationTest : BaseComplexityTest() {
             .registerExtension(GoPsiTreeChangeProcessor(), testDisposable)
     }
 
+    @Suppress("UnstableApiUsage")
     override fun tearDown() {
         Disposer.dispose(testDisposable)
         // Drop this class's registry overrides for later suites; the empty loadState keeps

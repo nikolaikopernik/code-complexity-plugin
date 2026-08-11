@@ -72,7 +72,7 @@ class ComplexitySettingsTest : BasePlatformTestCase() {
         try {
             methodSink(5).getValueToShow()
             fail("expected ArithmeticException: percentage mode divides by limitSimpleLessThan")
-        } catch (expected: ArithmeticException) {
+        } catch (_: ArithmeticException) {
         }
     }
 

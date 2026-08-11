@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.psi.KtSecondaryConstructor
  * (isComplexitySuitableMember / isClassWithBody / getNameElementFor).
  * Go is covered through its language suite instead: direct tests would need its parser scaffolding.
  */
+@Suppress("UnstableApiUsage") // the Python PSI is experimental, as in PythonLanguageVisitor
 class ProviderPredicateTest : BasePlatformTestCase() {
 
     fun testJavaPredicates() {
