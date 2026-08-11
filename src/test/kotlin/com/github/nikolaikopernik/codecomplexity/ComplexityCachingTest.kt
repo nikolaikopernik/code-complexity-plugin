@@ -5,10 +5,7 @@ import com.github.nikolaikopernik.codecomplexity.ui.ComplexityFactoryInlayHintsC
 import com.github.nikolaikopernik.codecomplexity.ui.obtainElementComplexity
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiErrorElement
-import com.intellij.psi.PsiMethod
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 /**
  * Characterizes what the complexity caches do and do not absorb, which is the measured cause of
@@ -22,10 +19,10 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
  * `InlayHintsPass` collects the Divider's inside *and* outside lists, so both costs are paid for
  * the whole file on every pass, not just for the visible part.
  */
-class ComplexityCachingTest : BasePlatformTestCase() {
+class ComplexityCachingTest : BaseCorpusTest() {
 
     fun testCacheIsReusedWhenTheFileIsUntouched() {
-        val methods = configureGeneratedClass()
+        val methods = configureCorpus(METHOD_COUNT)
         val before = methods.mapValues { (_, method) -> method.obtainElementComplexity() }
 
         val after = methods.mapValues { (_, method) -> method.obtainElementComplexity() }
@@ -35,7 +32,7 @@ class ComplexityCachingTest : BasePlatformTestCase() {
     }
 
     fun testOneKeystrokeDropsEveryCachedScoreInTheFile() {
-        val methodsBefore = configureGeneratedClass()
+        val methodsBefore = configureCorpus(METHOD_COUNT)
         val sinksBefore = methodsBefore.mapValues { (_, method) -> method.obtainElementComplexity() }
 
         // The caret sits in the last method, so this shifts no earlier offsets.
@@ -59,7 +56,7 @@ class ComplexityCachingTest : BasePlatformTestCase() {
     }
 
     fun testClassWalkRepeatsWhileItsMembersStayCached() {
-        val methods = configureGeneratedClass()
+        val methods = configureCorpus(METHOD_COUNT)
         val psiClass = PsiTreeUtil.findChildOfType(myFixture.file, PsiClass::class.java)!!
         val collector = ComplexityFactoryInlayHintsCollector(JavaComplexityInfoProvider(), myFixture.editor)
 
@@ -82,46 +79,6 @@ class ComplexityCachingTest : BasePlatformTestCase() {
         // The walk itself is thrown away every time, so each collector pass pays the traversal of
         // the entire class. Target is one shared instance; flip this to assertSame once cached.
         assertNotSame("class-level complexity is recomputed rather than cached", first, second)
-    }
-
-    /**
-     * Configures a class of uniformly-shaped, uniquely-named methods and returns them by name.
-     * Names survive the reparse, so they are what lets before/after be lined up.
-     */
-    private fun configureGeneratedClass(): Map<String, PsiMethod> {
-        myFixture.configureByText("Big.java", generateClass())
-
-        val errors = PsiTreeUtil.findChildrenOfType(myFixture.file, PsiErrorElement::class.java)
-        assertTrue("generated corpus must parse cleanly: ${errors.map { it.errorDescription }}", errors.isEmpty())
-
-        val methods = findMethodsByName()
-        assertEquals("generated methods must all be found and uniquely named", METHOD_COUNT, methods.size)
-
-        // A degenerate corpus would let the cache assertions pass without measuring anything.
-        val scores = methods.values.map { it.obtainElementComplexity().getComplexity() }.distinct()
-        assertEquals("generated methods must all score alike, got $scores", 1, scores.size)
-        assertTrue("generated methods must score above zero", scores.single() > 0)
-
-        return methods
-    }
-
-    private fun findMethodsByName(): Map<String, PsiMethod> =
-        PsiTreeUtil.findChildrenOfType(myFixture.file, PsiMethod::class.java).associateBy { it.name }
-
-    private fun generateClass(): String = buildString {
-        appendLine("class Big {")
-        (1..METHOD_COUNT).forEach { i ->
-            appendLine("    int ${"method%03d".format(i)}(int a, int b) {")
-            appendLine("        if (a > b && b > 0) {")
-            appendLine("            for (int i = 0; i < a; i++) {")
-            appendLine("                a += i;")
-            appendLine("            }")
-            appendLine("        }")
-            if (i == METHOD_COUNT) appendLine("        <caret>")
-            appendLine("        return a;")
-            appendLine("    }")
-        }
-        appendLine("}")
     }
 
     private companion object {
