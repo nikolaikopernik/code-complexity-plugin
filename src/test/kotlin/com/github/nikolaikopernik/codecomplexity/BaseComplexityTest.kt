@@ -3,7 +3,9 @@ package com.github.nikolaikopernik.codecomplexity
 import com.github.nikolaikopernik.codecomplexity.core.ComplexitySink
 import com.github.nikolaikopernik.codecomplexity.core.ElementVisitor
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.LightPlatformCodeInsightTestCase
 import java.io.File
 
@@ -39,6 +41,12 @@ abstract class BaseComplexityTest : LightPlatformCodeInsightTestCase() {
         val methods = parseTestFile(file)
         val fileName = this.drop(1)
         assertFalse("No annotated methods parsed from $fileName", methods.isEmpty())
+
+        // Expected scores must pin behaviour on valid code, not on a tree full of error elements.
+        PsiTreeUtil.findChildrenOfType(file, PsiErrorElement::class.java).forEach { error ->
+            val line = file.viewProvider.document!!.getLineNumber(error.textOffset) + 1
+            failures += "$fileName:$line: syntax error in test data: ${error.errorDescription}"
+        }
 
         methods.forEach { (element, name, expected) ->
             val sink = ComplexitySink().apply { element.accept(createLanguageElementVisitor(this)) }

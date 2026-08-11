@@ -82,7 +82,7 @@ fun myMethod() {
                 }
             }
         }
-    } catch (Exception e) {            // +1
+    } catch (e: Exception) {           // +1
         if (c) {
         }                     // +2 (nesting=1)
     }
@@ -148,7 +148,7 @@ private fun overriddenSymbolFrom(classType: ClassJavaType): MethodJavaSymbol? {
 
 
 @Complexity(1)
-fun getWords(int number): String {
+fun getWords(number: Int): String {
     when (number) {         // +1
         1 -> return "one";
         2 -> return "a couple";

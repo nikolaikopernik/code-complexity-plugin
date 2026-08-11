@@ -7,7 +7,7 @@ class Tests {
 
         do {                     // +1
             a++;
-        } while (true)
+        } while (true);
 
         for (int i = 0; i++; i < 10) { // +1
             a++;
@@ -26,7 +26,7 @@ class Tests {
     public void loopsCreateNesting() {
         while (true) {            // +1
             if (true) {           // +2 (nesting = 1)
-                a++
+                a++;
             } else {              // +1
 
             }
@@ -44,7 +44,7 @@ class Tests {
               .filter(it -> it != null)
               .forEach(it -> {         // nesting = 1
                   if (true) {          // +2 (nesting = 1)
-                      a++
+                      a++;
                   }
               });
     }

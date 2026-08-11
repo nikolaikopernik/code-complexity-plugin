@@ -15,6 +15,8 @@ def try_does_not_add_to_complexity_nor_nesting():
     try:
         if True:                        # +1
             parseFile("salary.txt")
+    finally:                            # +0
+        pass
 
 
 @complexity(3)
