@@ -28,3 +28,14 @@ def except_adds_to_both():
             print("a")
     finally:
         f.close()
+
+
+@complexity(3)
+def try_does_not_leak_nesting():
+    if a:                     # +1 (nesting=1)
+        try:
+            parseFile("salary.txt")
+        finally:
+            pass
+        if b:                 # +2 (nesting=1, unaffected by the try above)
+            print("b")

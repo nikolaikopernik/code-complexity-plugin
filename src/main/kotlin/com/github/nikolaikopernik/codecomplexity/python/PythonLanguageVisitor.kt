@@ -49,11 +49,12 @@ internal class PythonLanguageVisitor(private val sink: ComplexitySink) : Element
     }
 
     override fun postProcess(element: PsiElement) {
+        // No PyTryExceptStatement here: `try` itself never increases nesting, and decreasing
+        // for it left every following sibling one level too shallow.
         if (element is PyWhileStatement ||
             element is PyIfPart ||
             element is PyForStatement ||
             element is PyExceptPart ||
-            element is PyTryExceptStatement ||
             element is PyLambdaExpression) {
             sink.decreaseNesting()
         }

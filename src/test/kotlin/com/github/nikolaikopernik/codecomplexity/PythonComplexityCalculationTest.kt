@@ -13,7 +13,7 @@ private const val PYTHON_TEST_FILES_PATH = "src/test/testData/python"
 @Suppress("UnstableApiUsage")
 class PythonComplexityCalculationTest : BaseComplexityTest() {
     fun testPythonFiles() {
-        checkAllFilesInFolder(PYTHON_TEST_FILES_PATH, ".py", expectedMethodCount = 19)
+        checkAllFilesInFolder(PYTHON_TEST_FILES_PATH, ".py", expectedMethodCount = 20)
     }
 
     override fun getTestDataPath() = PYTHON_TEST_FILES_PATH
