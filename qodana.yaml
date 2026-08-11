@@ -1,0 +1,24 @@
+version: "1.0"
+
+linter: qodana-jvm-community
+
+profile:
+  name: qodana.recommended
+
+# Total sits at ~76%, so 70 catches regressions without failing today.
+failureConditions:
+  testCoverageThresholds:
+    total: 70
+    fresh: 80
+
+exclude:
+  - name: All
+    paths:
+      # Fixtures are deliberately odd (unresolved symbols, `if (n = 1)`, tiny snippets): will have too much noise
+      - src/test/testData
+      - .qodana
+  # Swing dialogs and inlay rendering aren't unit-tested by design; visitors keep their coverage findings.
+  - name: JvmCoverageInspection
+    paths:
+      - src/main/kotlin/com/github/nikolaikopernik/codecomplexity/settings
+      - src/main/kotlin/com/github/nikolaikopernik/codecomplexity/ui

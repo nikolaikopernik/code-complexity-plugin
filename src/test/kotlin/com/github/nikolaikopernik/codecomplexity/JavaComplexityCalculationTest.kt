@@ -9,14 +9,12 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.util.childrenOfType
 import org.jetbrains.kotlin.psi.psiUtil.getChildOfType
-import org.junit.Test
 
 private const val JAVA_TEST_FILES_PATH = "src/test/testData/java"
 
 class JavaComplexityCalculationTest : BaseComplexityTest() {
-    @Test
     fun testJavaFiles() {
-        checkAllFilesInFolder(JAVA_TEST_FILES_PATH, ".java")
+        checkAllFilesInFolder(JAVA_TEST_FILES_PATH, ".java", expectedMethodCount = 27)
     }
 
     override fun getTestDataPath() = JAVA_TEST_FILES_PATH

@@ -1,12 +1,16 @@
+import org.gradle.api.tasks.PathSensitivity
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 
 plugins {
     id("java") // Java support
     id("org.jetbrains.intellij.platform") version "2.18.1" // Gradle IntelliJ Plugin
     alias(libs.plugins.kotlin) // Kotlin support
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
+    alias(libs.plugins.kover) // Coverage, uploaded to CodeCov by the build workflow
+    alias(libs.plugins.qodana) // Qodana static analysis (see .run/Run Qodana)
 }
 
 group = providers.gradleProperty("pluginGroup").get()
@@ -103,6 +107,14 @@ intellijPlatform {
     }
 
     pluginVerification {
+        // The Gradle plugin added INTERNAL_API_USAGES to the default failureLevel in 2.15.0.  One internal call is
+        // left: PresentationFactory.offsetFromTopForSmallText, from the old inlay-hints API, which has no public
+        // equivalent.  Keep the pre-2.15.0 set until the UI layer moves to the declarative API.
+        failureLevel = listOf(
+            VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+            VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
+        )
+
         ides {
             recommended()
         }
@@ -118,6 +130,11 @@ changelog {
 tasks {
     wrapper {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
+    }
+
+    test {
+        // testData sits outside processed resources; without this an edit there doesn't re-run tests
+        inputs.dir("src/test/testData").withPathSensitivity(PathSensitivity.RELATIVE)
     }
 
     publishPlugin {

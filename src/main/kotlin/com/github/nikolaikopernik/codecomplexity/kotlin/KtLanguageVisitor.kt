@@ -115,7 +115,9 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     private fun getLogicalOperationsTokens(): TokenSet {
         return TokenSet.create(
             KtTokens.ANDAND,
-            KtTokens.OROR
+            KtTokens.OROR,
+            // elvis is a null-check decision, scored as a sequence like Dart's ??
+            KtTokens.ELVIS
         )
     }
 
@@ -145,12 +147,12 @@ class KtLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
 private fun KtToken.toPointType(): PointType =
     when (this) {
         KtTokens.ANDAND -> PointType.LOGICAL_AND
-        KtTokens.OROR -> PointType.LOGICAL_OR
+        KtTokens.OROR, KtTokens.ELVIS -> PointType.LOGICAL_OR
         else -> PointType.UNKNOWN
     }
 
 private fun PsiElement.findCurrentMethod(): KtNamedFunction? {
     var element: PsiElement? = this
     while (element != null && element !is KtNamedFunction) element = element.parent
-    return element?.let { it as KtNamedFunction }
+    return element
 }

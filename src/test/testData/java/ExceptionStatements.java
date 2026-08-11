@@ -5,6 +5,7 @@ class Tests {
             if (true) {                    // +1
                 parseFile("salary.txt");
             }
+        } finally {                        // +0
         }
     }
 
@@ -14,10 +15,10 @@ class Tests {
             parseFile("salary.txt");
         } catch (RuntimeException e) {       // +1
             if (e.message == "Not found") {  // +2 (nesting=1)
-                log.warn(e.getMessage())
+                log.warn(e.getMessage());
             }
         } catch (Exception e) {              // +1
-            log.error(e.getMessage())
+            log.error(e.getMessage());
         }
     }
 

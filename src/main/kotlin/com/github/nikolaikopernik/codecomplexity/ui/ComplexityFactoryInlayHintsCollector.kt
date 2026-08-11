@@ -17,13 +17,15 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiRecursiveElementVisitor
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
+import org.jetbrains.annotations.VisibleForTesting
 
 @Suppress("UnstableApiUsage")
 class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: ComplexityInfoProvider,
                                            private val editor: Editor) : FactoryInlayHintsCollector(editor) {
     private val setting: SettingsState = SettingsState.INSTANCE
 
-    private fun getClassComplexity(element: PsiElement): ComplexitySink {
+    @VisibleForTesting
+    internal fun getClassComplexity(element: PsiElement): ComplexitySink {
         return ComplexitySink().also { sink ->
             element.accept(object : PsiRecursiveElementVisitor() {
                 override fun visitElement(element: PsiElement) {
@@ -56,7 +58,7 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
     }
 
     private fun applySinkResults(element: PsiElement, score: ComplexitySink, sink: InlayHintsSink) {
-        getPresentation(element, score).let {
+        getPresentation(score).let {
             sink.addInlineElement(
                 offset = element.textOffset,
                 relatesToPrecedingText = true,
@@ -66,14 +68,12 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
         }
     }
 
-    private fun getPresentation(element: PsiElement, complexityScore: ComplexitySink): InlayPresentation {
-        val text = factory.inset(factory.offsetFromTopForSmallText(getTextPresentation(complexityScore, editor)))
+    private fun getPresentation(complexityScore: ComplexitySink): InlayPresentation {
+        val text = factory.inset(factory.offsetFromTopForSmallText(getTextPresentation(complexityScore)))
         if (setting.showIcon) {
             return factory.seq(
                 factory.offsetFromTopForSmallText(
-                    factory.scaledIcon(
-                        complexityScore.getConfiguredIcon(),
-                        1.0f)),
+                    factory.smallScaledIcon(complexityScore.getConfiguredIcon())),
                 text)
         }
         return text
@@ -90,18 +90,14 @@ class ComplexityFactoryInlayHintsCollector(private val complexityInfoProvider: C
                                           WithAttributesPresentation.AttributesFlags().withIsDefault(true))
     }
 
-    private fun getTextPresentation(complexity: ComplexitySink, editor: Editor): InlayPresentation =
+    private fun getTextPresentation(complexity: ComplexitySink): InlayPresentation =
         correctTextColour(
             factory.inset(
                 factory.smallText(complexity.getConfiguredText()),
                 left = 2, right = 2))
 
-    override fun equals(other: Any?): Boolean {
-        if (other is ComplexityFactoryInlayHintsCollector) {
-            return editor == other.editor
-        }
-        return false
-    }
+    override fun equals(other: Any?): Boolean =
+        other is ComplexityFactoryInlayHintsCollector && editor == other.editor
 
     override fun hashCode(): Int {
         return editor.hashCode()

@@ -145,15 +145,18 @@ class GoLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
 
             is GoStatement -> {
                 val parent = element.parent
-                when {
-                    // calculate a combination of logical operators in if statements
-                    element is GoSimpleStatement && parent is GoIfStatement -> calculateIfStatementOperators(parent, element)
+                when (// calculate a combination of logical operators in if statements
+                    element) {
+                    is GoSimpleStatement if parent is GoIfStatement -> calculateIfStatementOperators(parent, element)
+
                     // calculate a combination of logical operators
-                    element is GoSimpleStatement && element.hasChild<GoVarSpec>() -> calculateIfStatementOperators(element, element)
+                    is GoSimpleStatement if element.hasChild<GoVarSpec>() -> calculateIfStatementOperators(element, element)
+
                     // calculate a combination of logical operators in assignment statements
-                    element is GoAssignmentStatement && (element.hasChild<GoAndExpr>() || element.hasChild<GoOrExpr>()) -> calculateIfStatementOperators(element, element)
+                    is GoAssignmentStatement if (element.hasChild<GoAndExpr>() || element.hasChild<GoOrExpr>()) -> calculateIfStatementOperators(element, element)
+
                     // calculate a combination of logical operators in return statements
-                    element is GoReturnStatement && (element.hasChild<GoAndExpr>() || element.hasChild<GoOrExpr>()) -> calculateIfStatementOperators(element, element)
+                    is GoReturnStatement if (element.hasChild<GoAndExpr>() || element.hasChild<GoOrExpr>()) -> calculateIfStatementOperators(element, element)
                 }
             }
         }
@@ -202,7 +205,7 @@ class GoLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
             }
         } else if (element is GoParenthesesExpr) {
             val next = element.getNextExpr()
-            if (next != null && next.parent != null) {
+            if (next?.parent != null) {
                 val parentCondition = next.parent.findParentConditionExpr(next)
                 val pointType = parentCondition?.pointType() ?: element.pointType()
                 sink.increaseComplexity(pointType)
@@ -213,12 +216,17 @@ class GoLanguageVisitor(private val sink: ComplexitySink) : ElementVisitor() {
     }
 
     override fun postProcess(element: PsiElement) {
+        // Each branch mirrors the guard processElement used to increase nesting: an `else if` and a
+        // member/var-declaration function literal never increase, so they must not decrease either.
         when (element) {
+            is GoIfStatement -> if (element.parent !is GoElseStatement) sink.decreaseNesting()
+            is GoFunctionLit -> if (!element.isMemberFunction() && !element.isToplevelVarDeclFunction()) {
+                sink.decreaseNesting()
+            }
+
             is GoForStatement,
-            is GoIfStatement,
             is GoSwitchStatement,
-            is GoSelectStatement,
-            is GoFunctionLit -> sink.decreaseNesting()
+            is GoSelectStatement -> sink.decreaseNesting()
         }
     }
 
