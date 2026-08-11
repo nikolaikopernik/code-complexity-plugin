@@ -12,6 +12,7 @@ import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.psi.PyBinaryExpression
 import com.jetbrains.python.psi.PyBreakStatement
 import com.jetbrains.python.psi.PyCallExpression
+import com.jetbrains.python.psi.PyConditionalExpression
 import com.jetbrains.python.psi.PyContinueStatement
 import com.jetbrains.python.psi.PyElementType
 import com.jetbrains.python.psi.PyElsePart
@@ -36,6 +37,12 @@ internal class PythonLanguageVisitor(private val sink: ComplexitySink) : Element
             is PyIfPart -> sink.increaseComplexityAndNesting(PointType.IF)
             is PyElsePart -> sink.increaseComplexity(PointType.ELSE)
             is PyForStatement -> sink.increaseComplexityAndNesting(PointType.LOOP_FOR)
+            is PyConditionalExpression -> {
+                sink.increaseComplexityAndNesting(PointType.IF)
+                // the condition sits inside this expression, so the PyBinaryExpression
+                // branch below skips it; walk it here like Java and Dart do
+                element.calculateBinaryComplexity()
+            }
             is PyExceptPart -> sink.increaseComplexityAndNesting(PointType.CATCH)
             is PyBreakStatement -> if (element.loopStatement != null) sink.increaseComplexity(PointType.BREAK)
             is PyContinueStatement -> if (element.loopStatement != null) sink.increaseComplexity(PointType.CONTINUE)
@@ -56,6 +63,7 @@ internal class PythonLanguageVisitor(private val sink: ComplexitySink) : Element
         // for it left every following sibling one level too shallow.
         if (element is PyWhileStatement ||
             element is PyMatchStatement ||
+            element is PyConditionalExpression ||
             element is PyIfPart ||
             element is PyForStatement ||
             element is PyExceptPart ||
@@ -72,6 +80,7 @@ internal class PythonLanguageVisitor(private val sink: ComplexitySink) : Element
 
     private fun PyExpression.calculateBinaryComplexity(operands: MutableList<PyElementType> = mutableListOf()) {
         val elements = when (this) {
+            is PyConditionalExpression -> listOf(this.condition)
             is PyBinaryExpression -> listOf(this.leftExpression, this.operator, this.rightExpression)
             is PyParenthesizedExpression -> listOf(this.containedExpression)
             is PyPrefixExpression -> listOf(this.operand)
