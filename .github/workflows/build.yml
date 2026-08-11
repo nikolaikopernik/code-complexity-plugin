@@ -20,6 +20,11 @@ on:
   # Trigger the workflow on any pull request
   pull_request:
 
+# Drop superseded runs when a PR is pushed to again. Runs on main are left alone.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
 
   # Run Gradle Wrapper Validation Action to verify the wrapper's checksum
